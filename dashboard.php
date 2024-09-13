@@ -124,7 +124,7 @@ session_start();
             width: 7rem;
             display: flex;
             margin: auto;
-            padding: 10px 20px;
+            padding: 10px 10px;
             background-color: #dc3545;
             color: white;
             text-align: center;
@@ -133,12 +133,14 @@ session_start();
             font-weight: bold;
             border: none;
             cursor: pointer;
+            justify-content: center;
      
         }
         .logout_btn_dashboard a{
             text-decoration: none;
             color: white;
             text-align: center;
+
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">

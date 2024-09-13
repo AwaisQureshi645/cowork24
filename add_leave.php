@@ -156,31 +156,44 @@ $employees_result = $conn->query($employees_query);
         button:hover {
             background-color: #45a049;
         }
-        .logout-button {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            padding: 10px 20px;
-            background-color: #dc3545;
-            color: white;
-            text-align: center;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-            border: none;
-            cursor: pointer;
+
+        .loader {
+            display: none;
+            border: 4px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 4px solid #3498db;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+            margin: 20px auto;
         }
 
-        .logout-button:hover {
-            background: #c82333;
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .message {
+            display: none;
+            text-align: center;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+
+        .success {
+            color: white;
+        }
+
+        .error {
+            color: red;
         }
     </style>
 </head>
 <body>
     <h1>Add Leave Request</h1>
-  
-<a href="logout.php" class="logout-button">Logout</a>
-    <form method="post" action="">
+    <div class="loader" id="loader"></div>
+    <div class="message" id="message"></div>
+    <form method="post" action="" id="leaveForm">
         <div class="form-row">
             <div>
                 <label for="employeeID">Employee:</label>
@@ -223,5 +236,37 @@ $employees_result = $conn->query($employees_query);
 
         <button type="submit">Submit</button>
     </form>
+
+    <script>
+        document.getElementById('leaveForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            document.getElementById('loader').style.display = 'block';
+            document.getElementById('message').style.display = 'none';
+
+            var formData = new FormData(this);
+
+            fetch('', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('message').innerHTML = 'Email has been sent successfully.';
+                document.getElementById('message').classList.add('success');
+                document.getElementById('message').style.display = 'block';
+
+                setTimeout(() => {
+                    window.location.href = 'view_leaves.php';
+                }, 1000); // Redirect after 3 seconds
+            })
+            .catch(error => {
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('message').innerHTML = 'There was an error: ' + error;
+                document.getElementById('message').classList.add('error');
+                document.getElementById('message').style.display = 'block';
+            });
+        });
+    </script>
 </body>
 </html>

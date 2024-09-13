@@ -98,7 +98,8 @@ if ($stmt) {
             font-family: Arial, sans-serif;
             margin: 20px;
             padding: 20px;
-            background: linear-gradient(to right, #6a11cb, #2575fc)
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: #fff;
         }
         h1 {
             color: white;
@@ -108,6 +109,7 @@ if ($stmt) {
             padding: 20px;
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            color: #333;
         }
         label, select, button {
             display: block;
@@ -133,11 +135,41 @@ if ($stmt) {
         button:hover {
             background-color: #218838;
         }
+        .loader {
+            display: none;
+            border: 4px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 4px solid #3498db;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .message {
+            display: none;
+            text-align: center;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+        .success {
+            color: white;
+        }
+        .error {
+            color: red;
+        }
     </style>
 </head>
 <body>
     <h1>Update Leave Request</h1>
-    <form method="post" action="">
+    
+    <div class="loader" id="loader"></div>
+    <div class="message" id="message"></div>
+    
+    <form method="post" id="updateLeaveForm">
         <input type="hidden" name="leaveID" value="<?php echo $record['leaveID']; ?>">
         <label for="leave_status">Leave Status:</label>
         <select id="leave_status" name="leave_status">
@@ -147,5 +179,37 @@ if ($stmt) {
         </select>
         <button type="submit">Update</button>
     </form>
+
+    <script>
+        document.getElementById('updateLeaveForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            document.getElementById('loader').style.display = 'block';
+            document.getElementById('message').style.display = 'none';
+
+            var formData = new FormData(this);
+
+            fetch('', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('message').innerHTML = 'Leave status updated and email sent successfully.';
+                document.getElementById('message').classList.add('success');
+                document.getElementById('message').style.display = 'block';
+
+                setTimeout(() => {
+                    window.location.href = 'view_leaves.php';
+                }, 1000); // Redirect after 3 seconds
+            })
+            .catch(error => {
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('message').innerHTML = 'There was an error: ' + error;
+                document.getElementById('message').classList.add('error');
+                document.getElementById('message').style.display = 'block';
+            });
+        });
+    </script>
 </body>
 </html>

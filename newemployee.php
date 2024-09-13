@@ -34,6 +34,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
     $role = $_POST['role'];
     $branch_id = $_POST['branch_id'];
 
+    // Check if the employee ID already exists in the database
+    $check_query = "SELECT id FROM coworkusers WHERE id = ?";
+    $check_stmt = $conn->prepare($check_query);
+    $check_stmt->bind_param("s", $id);
+    $check_stmt->execute();
+    $check_result = $check_stmt->get_result();
+
+    if ($check_result->num_rows > 0) {
+        // If employee ID exists, show alert and redirect back to newemployee.php
+        echo "<script>alert('Employee ID already exists. Please use a different ID.');
+              window.location.href = 'newemployee.php';</script>";
+        exit();
+    }
+
+    // Proceed with adding the employee if the ID does not exist
     $upload_dir = 'uploaded_image/';
     if (!file_exists($upload_dir)) {
         mkdir($upload_dir, 0777, true); // Create directory if not exists
@@ -41,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
 
     $image = $_FILES['image']['tmp_name'];
     $image_name = basename($_FILES['image']['name']);
-    $imgData = pathinfo($image_name, PATHINFO_EXTENSION);
+    $imgData = strtolower(pathinfo($image_name, PATHINFO_EXTENSION)); // Convert extension to lowercase
     $img_desc = $upload_dir . $username . "." . $imgData;
 
     // Validate file size
@@ -50,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
         exit();
     }
 
-    // Validate file type
+    // Validate file type (case-insensitive)
     if (!in_array($imgData, ['jpg', 'jpeg', 'png', 'webp'])) {
         echo "<script>alert('Invalid Image Extension');</script>";
         exit();
@@ -67,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
                 $stmt->close();
                 $conn->close();
                 header("Location: /cowork/employeeData.php");
-                exit;
+                exit();
             } else {
                 echo "Error: " . $stmt->error;
             }
@@ -85,7 +100,6 @@ $teams = $conn->query("SELECT TeamID, TeamName FROM team");
 
 $conn->close();
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>

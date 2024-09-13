@@ -36,8 +36,12 @@ if (isset($_GET['item_id'])) {
     die("Item ID not provided.");
 }
 
-// Retrieve the branch_id from GET or session if necessary
-$branch_id = isset($_GET['branch_id']) ;
+// Retrieve the branch_id from GET parameters
+$branch_id = isset($_GET['branch_id']) ? intval($_GET['branch_id']) : 0;
+if ($branch_id === 0) {
+    die("Branch ID is invalid or not provided.");
+}
+
 $conn->close();
 ?>
 
@@ -49,8 +53,7 @@ $conn->close();
     <link rel="icon" href="cowork-logo.PNG">
     <title>Edit Item</title>
     <style>
-         
-        body {
+           body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
             margin: 0;
@@ -122,16 +125,17 @@ $conn->close();
         .logout-button:hover {
             background: #c82333;
         }
-        </style>
     </style>
 </head>
 <body>
-<a href="logout.php" class="logout-button">Logout</a>
+    <a href="logout.php" class="logout-button">Logout</a>
     <h1>Edit Item</h1>
+    
     <form action="update_item.php" method="post">
+        <!-- Hidden inputs to carry item_id and branch_id -->
         <input type="hidden" name="item_id" value="<?php echo htmlspecialchars($item['item_id']); ?>">
         <input type="hidden" name="branch_id" value="<?php echo htmlspecialchars($branch_id); ?>">
-        
+
         <label for="item_name">Item Name:</label>
         <input type="text" id="item_name" name="item_name" value="<?php echo htmlspecialchars($item['item_name']); ?>" required>
         <br>

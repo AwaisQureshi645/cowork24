@@ -1,6 +1,7 @@
 <?php
 session_start();
 header("Cache-Control: no-cache, must-revalidate");
+
 $host = 'localhost';
 $dbname = 'coworker';
 $username_db = 'root';
@@ -12,10 +13,10 @@ if ($conn->connect_error) {
 }
 
 // Check for user role
-if (!isset($_SESSION['role']) ||
-    ($_SESSION['role'] !== 'head' &&
-     $_SESSION['role'] !== 'financehead' &&
-     $_SESSION['role'] !== 'floorHost' &&
+if (!isset($_SESSION['role']) || 
+    ($_SESSION['role'] !== 'head' && 
+     $_SESSION['role'] !== 'financehead' && 
+     $_SESSION['role'] !== 'floorHost' && 
      $_SESSION['role'] !== 'manager')) {
     header('Location: access_denied.php');
     exit();
@@ -62,14 +63,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Step 3: Coworker Details
             $numCoworkers = $_SESSION['num_coworkers'];
             for ($i = 1; $i <= $numCoworkers; $i++) {
-                $name = $_POST['name_' . $i];
+                $name = $_POST['name_' . $i]; // Using underscore to match HTML field names
                 $contact = $_POST['contact_' . $i];
                 $email = $_POST['email_' . $i];
                 $coworkerType = $_POST['coworker_type_' . $i];
 
-                $insertCoworker = $conn->prepare("INSERT INTO coworkers (name, contact_info, email, coworker_type, TeamID) VALUES (?, ?, ?, ?, ?)");
-                $insertCoworker->bind_param("ssssi", $name, $contact, $email, $coworkerType, $_SESSION['team_id']);
-                $insertCoworker->execute();
+                if (!empty($name) && !empty($email)) {
+                    $insertCoworker = $conn->prepare("INSERT INTO coworkers (name, contact_info, email, coworker_type, TeamID) VALUES (?, ?, ?, ?, ?)");
+                    $insertCoworker->bind_param("ssssi", $name, $contact, $email, $coworkerType, $_SESSION['team_id']);
+                    $insertCoworker->execute();
+                } else {
+                    echo "Error: Coworker Name and Email are required.";
+                }
             }
             $_SESSION['step'] = 4; // Proceed to next step
             break;
@@ -225,6 +230,8 @@ function getStepTitle($step) {
     }
 }
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="en">

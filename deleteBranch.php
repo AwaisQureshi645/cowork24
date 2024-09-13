@@ -1,4 +1,6 @@
 <?php
+session_start(); // Add this to initialize the session
+
 if (isset($_GET['branch_id'])) {
     $branch_id = $_GET['branch_id'];
     $host = 'localhost';
@@ -10,22 +12,25 @@ if (isset($_GET['branch_id'])) {
     if ($conn->connect_error) {
         die("Connection failed: " . $conn->connect_error);
     }
+
+    // Check user role
     if (!isset($_SESSION['role']) || 
-    ($_SESSION['role'] !== 'head' && 
-     $_SESSION['role'] !== 'financehead' && 
-     $_SESSION['role'] !== 'floorHost' && 
-     $_SESSION['role'] !== 'manager')) {
-    header('Location: access_denied.php');
-    exit();
-}
+        ($_SESSION['role'] !== 'head' && 
+         $_SESSION['role'] !== 'financehead' && 
+         $_SESSION['role'] !== 'floorHost' && 
+         $_SESSION['role'] !== 'manager')) {
+        header('Location: access_denied.php');
+        exit();
+    }
     
+    // Prepare and execute the delete statement
     $sql = "DELETE FROM branches WHERE branch_id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $branch_id);
 
     if ($stmt->execute()) {
         header("Location: /cowork/branch.php");
-        exit;
+        exit();
     } else {
         echo "Error deleting branch: " . $conn->error;
     }

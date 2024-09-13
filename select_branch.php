@@ -91,7 +91,7 @@ $result = $conn->query($query);
 </head>
 <body>
     <div class="container">
-   ->
+   
         <h1>Select a Branch</h1>
         <form method="get" action="inventory.php">
             <select name="branch_id" required>

@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     $Price = $conn->real_escape_string($_POST["Price"]);
    
 
-    if ( empty($RoomNo) || empty($capacity) || empty($PettyCashID) || empty($Price) || empty($meetingRoomID)) {
+    if (empty($RoomNo) || empty($capacity) || empty($Price)) {
         $errormessage = "All fields are required";
     } else {
         $sql = "UPDATE office SET RoomNo = '$RoomNo', capacity = '$capacity', Price = '$Price' WHERE OfficeID = '$OfficeID'";

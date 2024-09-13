@@ -10,6 +10,8 @@ $conn = new mysqli($host, $username_db, $password_db, $dbname);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
+
+// Role check
 if (!isset($_SESSION['role']) || 
     ($_SESSION['role'] !== 'head' && 
      $_SESSION['role'] !== 'financehead' && 
@@ -19,10 +21,13 @@ if (!isset($_SESSION['role']) ||
     exit();
 }
 
+// Get branch ID
 $branch_id = isset($_GET['branch_id']) ? intval($_GET['branch_id']) : 0;
 
+// Debugging - Add JavaScript alert for tracking the branch ID
+//echo "<script>alert('Branch ID: " . $branch_id . "');</script>";
 
-$branch_name = "Unknown Branch"; 
+$branch_name = "Unknown Branch";
 
 if ($branch_id > 0) {
     $query = "
@@ -40,18 +45,18 @@ if ($branch_id > 0) {
     if ($result->num_rows > 0) {
         while ($row = $result->fetch_assoc()) {
             $items[] = $row;
-            $branch_name = htmlspecialchars($row['branch_name']); 
+            $branch_name = htmlspecialchars($row['branch_name']);
         }
-    } 
+    }
 
     $stmt->close();
 } else {
     error_log("Invalid branch ID: " . $branch_id);
+    echo "<script>alert('Invalid branch ID: " . $branch_id . "');</script>";
 }
 
 $conn->close();
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -110,6 +115,7 @@ $conn->close();
             text-decoration: none;
             cursor: pointer;
         }
+
         .delete-btn {
             background-color: #4CAF50;
             color: white;
@@ -119,12 +125,15 @@ $conn->close();
             text-decoration: none;
             cursor: pointer;
         }
+
         .edit-btn:hover {
             background-color: #45a049;
         }
+
         .delete-btn:hover {
             background-color: #45a049;
         }
+
         .logout-button {
             position: absolute;
             top: 20px;
