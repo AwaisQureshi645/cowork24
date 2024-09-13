@@ -15,6 +15,7 @@ if ($conn->connect_error) {
 if (!isset($_SESSION['role']) || 
     ($_SESSION['role'] !== 'head' && 
      $_SESSION['role'] !== 'financehead' && 
+     $_SESSION['role'] !== 'manager' && 
      $_SESSION['role'] !== 'floorHost')) {
     header('Location: access_denied.php');
     exit();
@@ -185,7 +186,7 @@ $total_pages = ceil($total_results / $results_per_page);
 </head>
 <body>
     <div class="dashboard">
-    <a href="logout.php" class="logout-button">Logout</a>
+   
         <h2>Visitor's Information</h2>
         
         <div id="table-container" class="table-container">

@@ -180,7 +180,7 @@ $total_pages = ceil($total_results / $results_per_page);
 
 <body>
     <div class="dashboard">
-    <a href="logout.php" class="logout-button">Logout</a>
+ 
         <h2>huddle Room Information</h2>
         <div style="text-align: right;">
             <a class="btn btn-primary" href="/cowork/newhuddle.php" role="button">Add New huddle Room</a>

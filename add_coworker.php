@@ -128,7 +128,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="form-container">
         <h2>Add a New Coworker</h2>
        
-<a href="logout.php" class="logout-button">Logout</a>
+
         
         <form id="addCoworkerForm" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
             <label for="coworker_type">Are you adding an individual or a team?</label><br>

@@ -13,6 +13,7 @@ if ($conn->connect_error) {
 if (!isset($_SESSION['role']) || 
     ($_SESSION['role'] !== 'head' && 
      $_SESSION['role'] !== 'financehead' && 
+     $_SESSION['role'] !== 'manager' &&
      $_SESSION['role'] !== 'floorHost')) {
     header('Location: access_denied.php');
     exit();

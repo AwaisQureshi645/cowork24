@@ -176,7 +176,7 @@ $total_pages = ceil($total_results / $results_per_page);
 </head>
 <body>
     <div class="dashboard">
-    <a href="logout.php" class="logout-button">Logout</a>
+  
         <h2>Tickets Information</h2>
         
         <div id="TicketTable">

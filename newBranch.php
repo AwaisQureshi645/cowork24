@@ -156,7 +156,7 @@ $conn->close();
 </head>
 <body>
     <div class="container">
-    <a href="logout.php" class="logout-button">Logout</a>
+   
         <h2>Add New Branch</h2>
         <form action="" method="post" enctype="multipart/form-data">
             <label for="branch_name">Branch Name:</label>

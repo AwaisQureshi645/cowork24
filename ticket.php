@@ -201,7 +201,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <body>
     <div class="container">
-        <a href="logout.php" class="logout-button">Logout</a>
+      
         <div class="create-ticket">
             <h2>Create Ticket</h2>
             <form method="post" action="ticket.php">

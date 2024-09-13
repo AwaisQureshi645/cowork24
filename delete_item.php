@@ -3,14 +3,14 @@ $conn = new mysqli('localhost', 'root', '', 'coworker');
 if ($conn->connect_error) {
     die('Connection failed: ' . $conn->connect_error);
 }
-if (!isset($_SESSION['role']) || 
-    ($_SESSION['role'] !== 'head' && 
-     $_SESSION['role'] !== 'financehead' && 
-     $_SESSION['role'] !== 'floorHost' && 
-     $_SESSION['role'] !== 'manager')) {
-    header('Location: access_denied.php');
-    exit();
-}
+// if (!isset($_SESSION['role']) || 
+//     ($_SESSION['role'] !== 'head' && 
+//      $_SESSION['role'] !== 'financehead' && 
+//      $_SESSION['role'] !== 'floorHost' && 
+//      $_SESSION['role'] !== 'manager')) {
+//     header('Location: access_denied.php');
+//     exit();
+// }
 
 
 if (isset($_GET['item_id']) && isset($_GET['branch_id'])) {

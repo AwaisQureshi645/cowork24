@@ -104,7 +104,7 @@
 
 <body>
     <div class="form-container">
-        <a href="logout.php" class="logout-button">Logout</a>
+      
         <h2>Add Inventory Item</h2>
         <?php
         session_start();

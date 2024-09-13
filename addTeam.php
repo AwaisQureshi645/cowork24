@@ -1,6 +1,6 @@
 <?php
 session_start();
-header("Cache-Control: no-cache, must-revalidate"); 
+header("Cache-Control: no-cache, must-revalidate");
 $host = 'localhost';
 $dbname = 'coworker';
 $username_db = 'root';
@@ -12,10 +12,11 @@ if ($conn->connect_error) {
 }
 
 // Check for user role
-if (!isset($_SESSION['role']) || 
-    ($_SESSION['role'] !== 'head' && 
-     $_SESSION['role'] !== 'financehead' && 
-     $_SESSION['role'] !== 'floorHost')) {
+if (!isset($_SESSION['role']) ||
+    ($_SESSION['role'] !== 'head' &&
+     $_SESSION['role'] !== 'financehead' &&
+     $_SESSION['role'] !== 'floorHost' &&
+     $_SESSION['role'] !== 'manager')) {
     header('Location: access_denied.php');
     exit();
 }
@@ -82,59 +83,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!file_exists($upload_dir)) {
                 mkdir($upload_dir, 0777, true); // Create directory if not exists
             }
-        
-            if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-                $image = $_FILES['image']['tmp_name'];
-                $image_name = basename($_FILES['image']['name']);
-                $image_size = $_FILES['image']['size'];
+
+            if (isset($_FILES['contract_copy']) && $_FILES['contract_copy']['error'] === UPLOAD_ERR_OK) {
+                $image = $_FILES['contract_copy']['tmp_name'];
+                $image_name = basename($_FILES['contract_copy']['name']);
+                $image_size = $_FILES['contract_copy']['size'];
                 $image_ext = pathinfo($image_name, PATHINFO_EXTENSION);
-        
+
                 // Validate file size
                 if ($image_size > (50 * 1024 * 1024)) {
                     echo "<script>alert('File size is greater than 50MB');</script>";
                     exit();
                 }
-        
-                $allowed_ext = ['jpg', 'jpeg', 'png', 'webp', 'pdf','PNG','JPG'];
+
+                $allowed_ext = ['jpg', 'jpeg', 'png', 'webp', 'pdf', 'PNG', 'JPG'];
                 if (!in_array($image_ext, $allowed_ext)) {
                     echo "<script>alert('Invalid File Extension');</script>";
                     exit();
                 }
-        
-                $contract_copy = $upload_dir . $coworker_id . "." . $image_ext;
-                    
-                    // Insert into database
-                    $insertContract = $conn->prepare("INSERT INTO contracts (contract_details, start_date, end_date, contract_copy, TeamID) VALUES (?, ?, ?, ?, ?)");
-                    $insertContract->bind_param("ssssi", $contractDetails, $startDate, $endDate, $contractCopy, $_SESSION['team_id']);
-                    $insertContract->execute();
-                  
-                    echo "Contract successfully added.";
-                    $_SESSION['contract_id'] = $conn->insert_id;
-                    $_SESSION['step'] = 5; // Proceed to next step
-                    break;
-        
-                } else {
-                    echo "File upload error.";
-                }
-           
-        case 5:
-          
-           
-                $_SESSION['branch_id'] = $_POST['branch_id'];
-                $branchId = $_SESSION['branch_id'];
-               
-                $_SESSION['step'] = 5;
-           
+
+                $contract_copy = $upload_dir . time() . "." . $image_ext; // Using time to create unique filenames
+                move_uploaded_file($image, $contract_copy);
+
+                // Insert into database
+                $insertContract = $conn->prepare("INSERT INTO contracts (contract_details, start_date, end_date, contract_copy, TeamID) VALUES (?, ?, ?, ?, ?)");
+                $insertContract->bind_param("ssssi", $contractDetails, $startDate, $endDate, $contract_copy, $_SESSION['team_id']);
+                $insertContract->execute();
+
+                $_SESSION['contract_id'] = $conn->insert_id;
+                $_SESSION['step'] = 5; // Proceed to next step
+            } else {
+                echo "File upload error.";
+            }
             break;
 
-         
-            
+        case 5:
+            // Step 5: Branch Selection
+            if (isset($_POST['branch_id'])) {
+                $_SESSION['branch_id'] = $_POST['branch_id'];
+                $_SESSION['step'] = 6;  // Proceed to the next step
+                header("Location: " . $_SERVER['PHP_SELF']);
+                exit();
+            } else {
+                $_SESSION['error_message'] = "Please select a branch.";
+                echo "<script>alert('Branch selection is required');</script>";
+            }
+            break;
 
         case 6:
-            $_SESSION['officeID'] = $_POST['officeID'];
-            $officeId = $_POST['officeID'];
+            // Ensure officeID and contract_id are passed and set
+            if (!isset($_POST['office_id']) || empty($_POST['office_id'])) {
+                echo "Error: Office ID is required.";
+                exit();
+            }
+
+            if (!isset($_SESSION['contract_id']) || empty($_SESSION['contract_id'])) {
+                echo "Error: Contract ID is missing.";
+                exit();
+            }
+
+            // Store office ID in the session and retrieve other necessary values
+            $_SESSION['officeID'] = $_POST['office_id'];
+            $officeId = $_POST['office_id'];
             $teamId = $_SESSION['team_id'];
             $contractId = $_SESSION['contract_id'];
+
+            // Rent and Security Deposit Fields
             $rentAmount = $_POST['rent_amount'];
             $rentStatus = $_POST['rent_status'];
             $rentPaymentDate = $_POST['rent_payment_date'];
@@ -166,21 +180,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $securityDepositStatus,
                 $securityDepositPaymentDate
             );
-            $insertBooking->execute();
-            
-            // Final step reached; redirect to welcome page
-            header('Location: welcome.php');
-            exit;
+
+            if ($insertBooking->execute()) {
+                header('Location: welcome.php');
+                exit();
+            } else {
+                echo "Error: " . $insertBooking->error;
+            }
+            break;
     }
 
     if ($_SESSION['step'] < 7) {
         header("Location: " . $_SERVER['PHP_SELF']);
-        exit;
+        exit();
     }
 }
 
 // Fetch branch data outside form processing
 $branches = $conn->query("SELECT branch_id, branch_name FROM branches");
+
+// Fetch available offices if on step 6
+if ($step == 6 && isset($_SESSION['branch_id'])) {
+    $branchId = $_SESSION['branch_id'];
+    $availableOffices = $conn->query("SELECT OfficeID, RoomNo, capacity FROM office WHERE branch_id = $branchId AND status = 'available'");
+}
 
 // Function to get step title
 function getStepTitle($step) {
@@ -202,8 +225,6 @@ function getStepTitle($step) {
     }
 }
 ?>
-
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -334,193 +355,192 @@ function getStepTitle($step) {
         .logout-button:hover {
             background: #c82333;
         }
-
     </style>
 
 </head>
 <body>
 <div class="form-container">
-        <h1><?php echo getStepTitle($step); ?></h1>
-        <!-- Reset Button to Start a New Team Addition -->
-        <a href="logout.php" class="logout-button">Logout</a>
+    <h1><?php echo getStepTitle($step); ?></h1>
+    <!-- Reset Button to Start a New Team Addition -->
+    <a href="logout.php" class="logout-button">Logout</a>
     <a href="<?php echo $_SERVER['PHP_SELF']; ?>?reset=1" style="display: inline-block; margin-bottom: 10px; padding: 5px 10px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px;">Start New Team</a>
-        <form method="POST" enctype="multipart/form-data">
-            <?php if ($step == 1): ?>
+    <form method="POST" enctype="multipart/form-data">
+        <?php if ($step == 1): ?>
+            <div class="form-group">
+                <label for="team_name">Team Name:</label>
+                <input type="text" id="team_name" name="team_name" class="form-control" required>
+            </div>
+
+            <div class="inline-group">
                 <div class="form-group">
-                    <label for="team_name">Team Name:</label>
-                    <input type="text" id="team_name" name="team_name" class="form-control" required>
+                    <label for="joining_date">Joining Date:</label>
+                    <input type="date" id="joining_date" name="joining_date" class="form-control" required>
                 </div>
 
+                <div class="form-group">
+                    <label for="ending_date">Ending Date:</label>
+                    <input type="date" id="ending_date" name="ending_date" class="form-control" required>
+                </div>
+            </div>
+
+            <div class="inline-group">
+                <div class="form-group">
+                    <label for="discount">Discount:</label>
+                    <input type="number" id="discount" name="discount" class="form-control" min="0" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="security_amount">Security Amount:</label>
+                    <input type="number" id="security_amount" name="security_amount" class="form-control" min="0" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="point_of_contact">Point of Contact:</label>
+                <textarea id="point_of_contact" name="point_of_contact" class="form-control" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="reference">Reference:</label>
+                <input type="text" id="reference" name="reference" class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label for="num_members">Number of Members:</label>
+                <input type="number" id="num_members" name="num_members" class="form-control" min="1" required>
+            </div>
+
+        <?php elseif ($step == 2): ?>
+            <div class="form-group">
+                <label for="num_coworkers">Number of Coworkers:</label>
+                <input type="number" id="num_coworkers" name="num_coworkers" class="form-control" min="1" required>
+            </div>
+
+        <?php elseif ($step == 3): ?>
+            <?php for ($i = 1; $i <= $_SESSION['num_coworkers']; $i++): ?>
+                <h3>Coworker <?php echo $i; ?></h3>
                 <div class="inline-group">
                     <div class="form-group">
-                        <label for="joining_date">Joining Date:</label>
-                        <input type="date" id="joining_date" name="joining_date" class="form-control" required>
+                        <label for="name_<?php echo $i; ?>">Name:</label>
+                        <input type="text" id="name_<?php echo $i; ?>" name="name_<?php echo $i; ?>" class="form-control" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="ending_date">Ending Date:</label>
-                        <input type="date" id="ending_date" name="ending_date" class="form-control" required>
-                    </div>
-                </div>
-
-                <div class="inline-group">
-                    <div class="form-group">
-                        <label for="discount">Discount:</label>
-                        <input type="number" id="discount" name="discount" class="form-control" min="0" required>
+                        <label for="contact_<?php echo $i; ?>">Contact Info:</label>
+                        <input type="text" id="contact_<?php echo $i; ?>" name="contact_<?php echo $i; ?>" class="form-control">
                     </div>
 
                     <div class="form-group">
-                        <label for="security_amount">Security Amount:</label>
-                        <input type="number" id="security_amount" name="security_amount" class="form-control" min="0" required>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="point_of_contact">Point of Contact:</label>
-                    <textarea id="point_of_contact" name="point_of_contact" class="form-control" required></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="reference">Reference:</label>
-                    <input type="text" id="reference" name="reference" class="form-control">
-                </div>
-
-                <div class="form-group">
-                    <label for="num_members">Number of Members:</label>
-                    <input type="number" id="num_members" name="num_members" class="form-control" min="1" required>
-                </div>
-
-            <?php elseif ($step == 2): ?>
-                <div class="form-group">
-                    <label for="num_coworkers">Number of Coworkers:</label>
-                    <input type="number" id="num_coworkers" name="num_coworkers" class="form-control" min="1" required>
-                </div>
-
-            <?php elseif ($step == 3): ?>
-                <?php for ($i = 1; $i <= $_SESSION['num_coworkers']; $i++): ?>
-                    <h3>Coworker <?php echo $i; ?></h3>
-                    <div class="inline-group">
-                        <div class="form-group">
-                            <label for="name_<?php echo $i; ?>">Name:</label>
-                            <input type="text" id="name_<?php echo $i; ?>" name="name_<?php echo $i; ?>" class="form-control" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="contact_<?php echo $i; ?>">Contact Info:</label>
-                            <input type="text" id="contact_<?php echo $i; ?>" name="contact_<?php echo $i; ?>" class="form-control">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="email_<?php echo $i; ?>">Email:</label>
-                            <input type="email" id="email_<?php echo $i; ?>" name="email_<?php echo $i; ?>" class="form-control" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="coworker_type_<?php echo $i; ?>">Coworker Type:</label>
-                            
-                    <select id="coworker_type_<?php echo $i; ?>" name="coworker_type_<?php echo $i; ?>">
-                        <option value="individual">Individual</option>
-                        <option value="team">Team</option>
-                    </select>
-                        </div>
-                    </div>
-                <?php endfor; ?>
-
-            <?php elseif ($step == 4): ?>
-                <div class="form-group">
-                    <label for="contract_details">Contract Details:</label>
-                    <textarea id="contract_details" name="contract_details" class="form-control" required></textarea>
-                </div>
-
-                <div class="inline-group">
-                    <div class="form-group">
-                        <label for="start_date">Start Date:</label>
-                        <input type="date" id="start_date" name="start_date" class="form-control" required>
+                        <label for="email_<?php echo $i; ?>">Email:</label>
+                        <input type="email" id="email_<?php echo $i; ?>" name="email_<?php echo $i; ?>" class="form-control" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="end_date">End Date:</label>
-                        <input type="date" id="end_date" name="end_date" class="form-control" required>
+                        <label for="coworker_type_<?php echo $i; ?>">Coworker Type:</label>
+
+                        <select id="coworker_type_<?php echo $i; ?>" name="coworker_type_<?php echo $i; ?>">
+                            <option value="individual">Individual</option>
+                            <option value="team">Team</option>
+                        </select>
                     </div>
+                </div>
+            <?php endfor; ?>
+
+        <?php elseif ($step == 4): ?>
+            <div class="form-group">
+                <label for="contract_details">Contract Details:</label>
+                <textarea id="contract_details" name="contract_details" class="form-control" required></textarea>
+            </div>
+
+            <div class="inline-group">
+                <div class="form-group">
+                    <label for="start_date">Start Date:</label>
+                    <input type="date" id="start_date" name="start_date" class="form-control" required>
                 </div>
 
                 <div class="form-group">
+                    <label for="end_date">End Date:</label>
+                    <input type="date" id="end_date" name="end_date" class="form-control" required>
+                </div>
+            </div>
+
+            <div class="form-group">
                 <label for="contract_copy">Contract Copy:</label>
                 <input type="file" name="contract_copy" accept=".jpg,.jpeg,.png,.webp,.pdf" required><br>
+            </div>
 
-            <?php elseif ($step == 5): ?>
-                <div class="form-group">
-                    <label for="branch_id">Select Branch:</label>
-                    <select id="branch_id" name="branch_id" class="form-control" required>
-                        <?php while ($branch = $branches->fetch_assoc()): ?>
-                            <option value="<?php echo $branch['branch_id']; ?>"><?php echo $branch['branch_name']; ?></option>
+        <?php elseif ($step == 5): ?>
+            <div class="form-group">
+                <label for="branch_id">Select Branch:</label>
+                <select id="branch_id" name="branch_id" class="form-control" required>
+                    <?php while ($branch = $branches->fetch_assoc()): ?>
+                        <option value="<?php echo $branch['branch_id']; ?>"><?php echo $branch['branch_name']; ?></option>
+                    <?php endwhile; ?>
+                </select>
+            </div>
+            <?php if (isset($_SESSION['error_message'])): ?>
+                <div class="error"><?php echo $_SESSION['error_message']; ?></div>
+            <?php endif; ?>
+
+        <?php elseif ($step == 6): ?>
+            <div class="form-group">
+                <label for="office_id">Select Office:</label>
+                <?php if (isset($availableOffices) && $availableOffices->num_rows > 0): ?>
+                    <select id="office_id" name="office_id" required>
+                        <?php while ($office = $availableOffices->fetch_assoc()): ?>
+                            <option value="<?php echo htmlspecialchars($office['OfficeID']); ?>">
+                                Room No: <?php echo htmlspecialchars($office['RoomNo']); ?> - Capacity: <?php echo htmlspecialchars($office['capacity']); ?>
+                            </option>
                         <?php endwhile; ?>
                     </select>
-                </div>
-                <?php if (isset($_SESSION['error_message'])): ?>
-                    <div class="error"><?php echo $_SESSION['error_message']; ?></div>
+                <?php else: ?>
+                    <script>
+                        alert("No office is available in the selected branch. Redirecting to step 5...");
+                        window.location.href = "<?php echo $_SERVER['PHP_SELF']; ?>?reset=1";
+                    </script>
                 <?php endif; ?>
-            <?php elseif ($step == 6): ?>
+            </div>
+
+            <div class="inline-group">
                 <div class="form-group">
-    <label for="office_id">Select Office:</label>
-    <?php if (isset($availableOffices) && count($availableOffices) > 0): ?>
-        <select id="office_id" name="office_id" required>
-            <?php foreach ($availableOffices as $office): ?>
-                <option value="<?php echo htmlspecialchars($office['OfficeID']); ?>">
-                    Room No: <?php echo htmlspecialchars($office['RoomNo']); ?> - Capacity: <?php echo htmlspecialchars($office['capacity']); ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-    <?php else: ?>
-        <script>
-            alert("No office is available in the selected branch. Redirecting to step 5...");
-            $_SESSION['step'] = 5;
-            
-        </script>
-    <?php endif; ?>
+                    <label for="rent_amount">Rent Amount:</label>
+                    <input type="number" id="rent_amount" name="rent_amount" class="form-control" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="rent_status">Rent Status:</label>
+                    <select id="rent_status" name="rent_status" class="form-control">
+                        <option value="paid">Paid</option>
+                        <option value="pending">Pending</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="rent_payment_date">Rent Payment Date:</label>
+                    <input type="date" id="rent_payment_date" name="rent_payment_date" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label for="security_deposit_amount">Security Deposit Amount:</label>
+                    <input type="number" id="security_deposit_amount" name="security_deposit_amount" class="form-control" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="security_deposit_status">Security Deposit Status:</label>
+                    <select id="security_deposit_status" name="security_deposit_status" class="form-control">
+                        <option value="paid">Paid</option>
+                        <option value="pending">Pending</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="security_deposit_payment_date">Security Deposit Payment Date:</label>
+                    <input type="date" id="security_deposit_payment_date" name="security_deposit_payment_date" class="form-control">
+                </div>
+            </div>
+        <?php endif; ?>
+        <button type="submit">Next</button>
+    </form>
 </div>
-
-        </div>
-                <div class="inline-group">
-    <div class="form-group">
-        <label for="rent_amount">Rent Amount:</label>
-        <input type="number" id="rent_amount" name="rent_amount" class="form-control" min="0">
-    </div>
-
-    <div class="form-group">
-        <label for="rent_status">Rent Status:</label>
-        <select id="rent_status" name="rent_status" class="form-control">
-            <option value="paid">Paid</option>
-            <option value="pending">Pending</option>
-        </select>
-    </div>
-    
-    <div class="form-group">
-        <label for="rent_payment_date">Rent Payment Date:</label>
-        <input type="date" id="rent_payment_date" name="rent_payment_date" class="form-control">
-    </div>
-    
-    <div class="form-group">
-        <label for="security_deposit_amount">Security Deposit Amount:</label>
-        <input type="number" id="security_deposit_amount" name="security_deposit_amount" class="form-control" min="0">
-    </div>
-
-    <div class="form-group">
-        <label for="security_deposit_status">Security Deposit Status:</label>
-        <select id="security_deposit_status" name="security_deposit_status" class="form-control">
-            <option value="paid">Paid</option>
-            <option value="pending">Pending</option>
-        </select>
-    </div>
-    
-    <div class="form-group">
-        <label for="security_deposit_payment_date">Security Deposit Payment Date:</label>
-        <input type="date" id="security_deposit_payment_date" name="security_deposit_payment_date" class="form-control">
-    </div>
-</div>
-            <?php endif; ?>
-            <button type="submit">Next</button>
-        </form>
-    </div>
 </body>
 </html>

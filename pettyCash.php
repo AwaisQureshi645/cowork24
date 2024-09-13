@@ -145,7 +145,7 @@ $conn->close();
 </head>
 <body>
     <div class="container">
-        <a href="logout.php" class="logout-button">Logout</a>
+       
         <h2 class="text-center mb-4">Update Petty Cash</h2>
         <form method="post" action="">
             <div class="mb-3">

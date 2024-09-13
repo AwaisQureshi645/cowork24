@@ -124,7 +124,7 @@ $conn->close();
 </head>
 <body>
     <div class="container">
-    <a href="logout.php" class="logout-button">Logout</a>
+  
         <h2>Add New Record of Visitor</h2>
         <form action="bookaVisit.php" method="post">
             <div class="mb-3">

@@ -120,6 +120,26 @@ session_start();
             border: double;
             overflow: auto;
         }
+        .logout_btn_dashboard{
+            width: 7rem;
+            display: flex;
+            margin: auto;
+            padding: 10px 20px;
+            background-color: #dc3545;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+     
+        }
+        .logout_btn_dashboard a{
+            text-decoration: none;
+            color: white;
+            text-align: center;
+        }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 </head>
@@ -135,14 +155,14 @@ session_start();
                 <div class="menuitem">
                     <div class="menucontrol " >
                      <div style="display:flex;Flex-direction:column">
+                       
+                    
+
                      <div class="menushow" onclick="navigateTo('welcome.php')">
                             <i class="fa-brands fa-dashcube"></i>
                             <p>Dashboard</p>
                         </div>
-                        <div onclick="navigateTo('logout.php')">
-                         
-                            <p>Logout</p>
-                        </div>
+                     
 
                      </div>
                         
@@ -317,10 +337,14 @@ session_start();
                             <li onclick="navigateTo('financedisplay.php')"><a href="#">Rents</a></li>
                         </ul>
                     </div>
+                   
                 </div>
+                
             <?php endif; ?>
             
-           
+            <div class="logout_btn_dashboard">
+                        <a href="logout.php" class="logout-button">Logout</a>
+                        </div>
             
            
         </div>
@@ -346,6 +370,7 @@ session_start();
             }
         }
     </script>
+    
 </body>
 
 </html>

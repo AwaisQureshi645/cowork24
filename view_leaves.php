@@ -1,6 +1,12 @@
 <?php
 session_start();
-if ($_SESSION['role'] !== 'head') {
+
+// Check if the user has the allowed role
+if (!isset($_SESSION['role']) || 
+    ($_SESSION['role'] !== 'head' && 
+     $_SESSION['role'] !== 'financehead' && 
+     $_SESSION['role'] !== 'floorHost' && 
+     $_SESSION['role'] !== 'manager')) {
     header('Location: access_denied.php');
     exit();
 }
