@@ -112,6 +112,7 @@ function getBranchSeatData() {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome Dashboard</title>
+    <link rel="stylesheet" href="./style.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -119,6 +120,7 @@ function getBranchSeatData() {
             padding: 0;
             background: linear-gradient(135deg, #01899f 0%, #01abc6 100%);
             color: #333;
+            border: none ;
         }
 
         .container {
@@ -179,7 +181,7 @@ function getBranchSeatData() {
             width: 100%;
             padding: 15px;
             border: none;
-            background-color: #ff5722;
+            background-color: #ff8905;
             color: white;
             font-size: 18px;
             border-radius: 8px;
@@ -231,7 +233,7 @@ function getBranchSeatData() {
 
         .full-screen {
             width: 100%;
-            height: 100vh;
+            /* height: 100vh; */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -291,15 +293,14 @@ function getBranchSeatData() {
             </tbody>
         </table>
     </div>
-
-        <div class="widget">
-            <button onclick="toggleInventoryOptions()">Inventory of cowork-24</button>
-            <div class="inventory-options" id="inventoryOptions">
-                <button onclick="loadContent('select_branch.php')">View Inventory</button>
-                <button onclick="loadContent('add_inventory.php')">Add Inventory</button>
-            </div>
-            <div class="inventory-content" id="inventoryContent"></div>
+    <div class="widget">
+            <h2>Active Bookings</h2>
+            <p><?php echo getActiveBookings(); ?></p>
         </div>
+
+<!-- testing -->
+
+    
         <div class="widget">
             <h2>Total Employees</h2>
             <p><?php echo getTotalEmployees(); ?></p>
@@ -312,10 +313,13 @@ function getBranchSeatData() {
        
 
         <div class="widget">
-            <h2>Active Bookings</h2>
-            <p><?php echo getActiveBookings(); ?></p>
+            <button onclick="toggleInventoryOptions()">Inventory of cowork-24</button>
+            <div class="inventory-options" id="inventoryOptions">
+                <button onclick="loadContent('select_branch.php')">View Inventory</button>
+                <button onclick="loadContent('add_inventory.php')">Add Inventory</button>
+            </div>
+            <div class="inventory-content" id="inventoryContent"></div>
         </div>
-
 
 
         <div class="widget">

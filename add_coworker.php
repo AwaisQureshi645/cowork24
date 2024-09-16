@@ -43,10 +43,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add a Coworker</title>
+    <link rel="stylesheet" href="style.css">
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(to right, #4facfe, #00f2fe); 
+            background: #eaeaea; 
             color:black;
             display: flex;
             justify-content: center;

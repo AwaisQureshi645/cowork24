@@ -85,6 +85,8 @@ $conn->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="cowork-logo.PNG">
+    <link rel="stylesheet" href="style.css">
+
     <title>Edit Team Data</title>
     <style>
        body {

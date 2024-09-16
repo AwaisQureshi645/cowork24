@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="cowork-logo.PNG">
     <title>Add Inventory</title>
+    <link rel="stylesheet" href="style.css">
+
     <style>
         body {
             font-family: Arial, sans-serif;

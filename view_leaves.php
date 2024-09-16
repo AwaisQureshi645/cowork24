@@ -43,6 +43,8 @@ if (!$result) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Leave Requests</title>
+    <link rel="stylesheet" href="style.css">
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -134,7 +136,7 @@ if (!$result) {
             padding: 10px 20px;
             font-size: 16px;
             color: #fff;
-            background-color: #007bff;
+            background-color: #ff8905;
             border-radius: 5px;
             text-align: center;
             transition: background-color 0.3s ease;

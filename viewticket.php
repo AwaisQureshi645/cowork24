@@ -51,6 +51,8 @@ $total_pages = ceil($total_results / $results_per_page);
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" rel="stylesheet">
     <link rel="icon" href="cowork-logo.PNG">
+    <link rel="stylesheet" href="style.css">
+
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -116,11 +118,11 @@ $total_pages = ceil($total_results / $results_per_page);
         }
 
         .btn-primary {
-            background-color: #007bff;
+            background-color: #007bff !important;
         }
 
         .btn-danger {
-            background-color: #dc3545;
+            background-color: #dc3545 !important;
         }
 
         .pagination {

@@ -95,10 +95,11 @@ $employees_result = $conn->query($employees_query);
 <html>
 <head>
     <title>Add Leave Request</title>
+    <link rel="stylesheet" href="style.css">
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(to right, #6a11cb, #2575fc);
+            background: #eaeaea;
             color: #fff;
             padding: 50px;
         }
@@ -164,7 +165,7 @@ $employees_result = $conn->query($employees_query);
             border-top: 4px solid #3498db;
             width: 40px;
             height: 40px;
-            animation: spin 2s linear infinite;
+            animation: spin 2s  infinite;
             margin: 20px auto;
         }
 

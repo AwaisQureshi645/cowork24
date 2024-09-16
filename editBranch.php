@@ -79,12 +79,13 @@ $conn->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="cowork-logo.PNG">
+    <link rel="stylesheet" href="style.css">
+
     <title>Edit Branch Data</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f4f4;
-            background: linear-gradient(to top, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('bgc.jpg');
+            background-color: #eaeaea;
             background-size: cover;
             background-position: center;
             display: flex;

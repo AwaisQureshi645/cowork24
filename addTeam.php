@@ -238,10 +238,12 @@ function getStepTitle($step) {
 <head>
     <meta charset="UTF-8">
     <title>Office Booking System</title>
+    <link rel="stylesheet" href="style.css">
+
     <style>
          body {
             font-family: 'Arial', sans-serif;
-            background: linear-gradient(to right, #007bff, #00d4ff);
+            background: #eaeaea;
             margin: 0;
             padding: 0;
             display: flex;

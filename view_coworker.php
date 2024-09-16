@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Display Coworker Data</title>
+    <link rel="stylesheet" href="style.css">
+
     <style>
         table {
             width: 100%;
