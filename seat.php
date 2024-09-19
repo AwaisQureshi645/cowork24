@@ -369,6 +369,10 @@ if (isset($_POST['action']) && $_POST['action'] == 'delete_seat') {
 }
 
 
+
+
+
+
     </style>
 </head>
 <body>

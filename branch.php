@@ -67,7 +67,7 @@ $total_pages = ceil($total_results / $results_per_page);
             background-color: white;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
             border-radius: 10px;
-            padding: 20px;
+          
         }
 
         h2 {

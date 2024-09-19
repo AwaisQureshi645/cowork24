@@ -60,6 +60,7 @@ $conn->close();
             background-color: #f4f4f4;
             margin: 0;
             padding: 20px;
+            background-color: white !important;
         }
 
         .container {
@@ -130,7 +131,7 @@ $conn->close();
     </style>
 </head>
 <body>
-    <a href="logout.php" class="logout-button">Logout</a>
+
     <h1>Edit Item</h1>
     
     <form action="update_item.php" method="post">

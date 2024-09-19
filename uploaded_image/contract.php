@@ -144,8 +144,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="form-container">
         <h2>Add Contract</h2>
         <form action="" method="post" enctype="multipart/form-data">
-            <label for="contract_details">Contract Details:</label>
-            <textarea id="contract_details" name="contract_details" rows="5" required></textarea>
+            <!-- <label for="contract_details">Contract Details:</label>
+            <textarea id="contract_details" name="contract_details" rows="5" required></textarea> -->
 
             <label for="start_date">Start Date:</label>
             <input type="date" id="start_date" name="start_date" required>
@@ -154,7 +154,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <input type="date" id="end_date" name="end_date" required>
 
             <label for="image">Upload Contract File:</label>
-            <input type="file" id="image" name="image" class="form-control-file" required>
+            <input type="file" id="image" name="image" class="form-control-file" >
 
             <button type="submit">Submit Contract</button>
         </form>

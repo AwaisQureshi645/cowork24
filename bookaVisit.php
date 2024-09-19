@@ -14,11 +14,13 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-if (!isset($_SESSION['role']) || 
-    ($_SESSION['role'] !== 'head' && 
-     $_SESSION['role'] !== 'financehead' && 
-     $_SESSION['role'] !== 'floorHost' && 
-     $_SESSION['role'] !== 'manager')) {
+if (
+    !isset($_SESSION['role']) ||
+    ($_SESSION['role'] !== 'head' &&
+        $_SESSION['role'] !== 'financehead' &&
+        $_SESSION['role'] !== 'floorHost' &&
+        $_SESSION['role'] !== 'manager')
+) {
     header('Location: access_denied.php');
     exit();
 }
@@ -49,7 +51,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($purpose && $name  && $phonenumber && $branch_id) {
         $stmt = $conn->prepare("INSERT INTO visitorsinfo (purpose, name, email,businessDetails, phonenumber, assignedTo, branch_id, Comments, appointment_date) VALUES (?, ?, ?, ?, ?, ?, ?,?,?)");
         if ($stmt) {
-            $stmt->bind_param("sssssssss", $purpose, $name,$email,$businessDetails,   $phonenumber, $assignedTo, $branch_id, $comment, $appointment_date);
+            $stmt->bind_param("sssssssss", $purpose, $name, $email, $businessDetails,   $phonenumber, $assignedTo, $branch_id, $comment, $appointment_date);
 
             if ($stmt->execute()) {
                 echo "New record created successfully";
@@ -74,6 +76,7 @@ $conn->close();
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -104,6 +107,7 @@ $conn->close();
             overflow-y: auto;
             max-height: 90vh;
         }
+
         .logout-button {
             position: absolute;
             top: 20px;
@@ -124,16 +128,17 @@ $conn->close();
         }
     </style>
 </head>
+
 <body>
     <div class="container">
-  
+
         <h2>Add New Record of Visitor</h2>
         <form action="bookaVisit.php" method="post">
             <div class="mb-3">
                 <label for="name" class="form-label">Name</label>
                 <input type="text" class="form-control" id="name" name="name" required>
             </div>
-            
+
             <div class="mb-3">
                 <label for="phonenumber" class="form-label">Phone Number</label>
                 <input type="text" class="form-control" id="phonenumber" name="phonenumber" required>
@@ -159,7 +164,7 @@ $conn->close();
             </div>
             <div class="mb-3">
                 <label for="assignedTo" class="form-label">Assigned To</label>
-                <textarea class="form-control" id="assignedTo" name="assignedTo" rows="3"></textarea>
+                <input type="text" class="form-control" id="assignedTo" name="assignedTo" rows="3"></input>
             </div>
             <div class="mb-3">
                 <label for="comment" class="form-label">Comment</label>
@@ -171,10 +176,13 @@ $conn->close();
             </div>
             <div class="mb-3">
                 <label for="appointment_date" class="form-label">Appointment Date:</label>
-                <input type="datetime-local" class="form-control" id="appointment_date" name="appointment_date" required>
+                <input type="datetime-local" class="form-control" id="appointment_date" name="appointment_date" required onclick="this.showPicker();">
             </div>
+
+
             <button type="submit" class="btn btn-primary">Submit</button>
         </form>
     </div>
 </body>
+
 </html>

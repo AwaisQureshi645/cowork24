@@ -243,7 +243,7 @@ $total_pages = ceil($total_results / $results_per_page);
 
 <body>
     <div class="dashboard">
-        <a href="logout.php" class="logout-button">Logout</a>
+    
         <h2>Employees Information</h2>
         <div class="add-employee-btn">
             <a class="btn btn-primary" href="/cowork/newemployee.php" role="button">Add New Employee</a>

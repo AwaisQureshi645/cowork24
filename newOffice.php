@@ -165,11 +165,11 @@ $conn->close();
 </head>
 <body>
     <div class="container">
-    <a href="logout.php" class="logout-button">Logout</a>
+ 
         <h2>Add New Office</h2>
         <form action="" method="post">
             <label for="RoomNo">Room Number:</label>
-            <input type="number" id="RoomNo" name="RoomNo" required>
+            <input type="text" id="RoomNo" name="RoomNo" required>
             
             <label for="capacity">Capacity:</label>
             <input type="number" id="capacity" name="capacity" required>

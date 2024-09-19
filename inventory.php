@@ -158,7 +158,7 @@ $conn->close();
 </head>
 <body>
     <div class="container">
-    <a href="logout.php" class="logout-button">Logout</a>
+   
         <h1>Inventory for <?php echo htmlspecialchars($branch_name); ?></h1>
         <table>
             <thead>

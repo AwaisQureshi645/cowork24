@@ -43,13 +43,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $start_date = $_POST['start_date'];
     $end_date = $_POST['end_date'];
 
-    // Handle file upload
+    // Handle file upload if present
     $upload_dir = 'uploaded_files/';
     if (!file_exists($upload_dir)) {
         mkdir($upload_dir, 0777, true); // Create directory if not exists
     }
 
-    if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+    $contract_copy = NULL; // Default to null, as the image is not required
+
+    if (isset($_FILES['image']) && $_FILES['image']['error'] !== UPLOAD_ERR_NO_FILE) {
         $image = $_FILES['image']['tmp_name'];
         $image_name = basename($_FILES['image']['name']);
         $image_size = $_FILES['image']['size'];
@@ -69,25 +71,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         $contract_copy = $upload_dir . $coworker_id . "." . $image_ext;
-        if (move_uploaded_file($image, $contract_copy)) {
-            // Insert contract into database
-            $stmt = $conn->prepare("INSERT INTO contracts (coworker_id, contract_details, start_date, end_date, contract_copy) VALUES (?, ?, ?, ?, ?)");
-            $stmt->bind_param("issss", $coworker_id, $contract_details, $start_date, $end_date, $contract_copy);
-
-            if ($stmt->execute()) {
-                echo "<script>alert('Upload Successful');</script>";
-                $stmt->close();
-                $conn->close();
-                header('Location: view_contracts.php');
-                exit;
-            } else {
-                echo "Error: " . $stmt->error;
-            }
-        } else {
+        if (!move_uploaded_file($image, $contract_copy)) {
             echo "<script>alert('Failed to move uploaded file.');</script>";
+            exit();
         }
+    }
+
+    // Insert contract into the database
+    $stmt = $conn->prepare("INSERT INTO contracts (coworker_id, contract_details, start_date, end_date, contract_copy) VALUES (?, ?, ?, ?, ?)");
+    $stmt->bind_param("issss", $coworker_id, $contract_details, $start_date, $end_date, $contract_copy);
+
+    if ($stmt->execute()) {
+        echo "<script>alert('Contract Submitted Successfully');</script>";
+        $stmt->close();
+        $conn->close();
+        header('Location: view_contracts.php');
+        exit();
     } else {
-        echo "<script>alert('No file uploaded or upload error.');</script>";
+        echo "Error: " . $stmt->error;
     }
 }
 ?>
@@ -103,7 +104,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <style>
         body {
             font-family: Arial, sans-serif;
-           
             padding: 20px;
         }
         .form-container {
@@ -140,26 +140,35 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         button:hover {
             background-color: #45a049;
         }
+        #start_date{
+            margin-right: 1rem;
+        }
+        #end_date{
+            margin-left: 1rem;
+        }
     </style>
 </head>
 <body>
     <div class="form-container">
         <h2>Add Contract</h2>
         <form action="" method="post" enctype="multipart/form-data">
-            <label for="contract_details">Contract Details:</label>
+               <label for="contract_details">Contract Details:</label>
             <textarea id="contract_details" name="contract_details" rows="5" required></textarea>
-
             <label for="start_date">Start Date:</label>
-            <input type="date" id="start_date" name="start_date" required>
+            <input type="date" id="start_date" name="start_date" required onclick="this.showPicker();">
 
             <label for="end_date">End Date:</label>
-            <input type="date" id="end_date" name="end_date" required>
+            <input type="date" id="end_date" name="end_date" required onclick="this.showPicker();">
 
-            <label for="image">Upload Contract File:</label>
-            <input type="file" id="image" name="image" class="form-control-file" required>
+            <label for="image">Upload Contract File (optional):</label>
+            <input type="file" id="image" name="image" class="form-control-file">
 
             <button type="submit">Submit Contract</button>
         </form>
     </div>
 </body>
 </html>
+
+<?php
+$conn->close();
+?>

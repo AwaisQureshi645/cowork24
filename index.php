@@ -86,7 +86,7 @@ $conn->close();
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            height: 90vh;
             margin: 0;
         }
 
@@ -156,12 +156,13 @@ $conn->close();
 
         .toggle-password {
             position:absolute;
-            padding-top: 15px;
+        
+            padding-top: 19px;
             top: 50%;
             right: 10px;
             transform: translateY(-50%);
             cursor: pointer;
-            font-size: 34px; 
+            font-size: 24px; 
             color: #999;
         }
     </style>

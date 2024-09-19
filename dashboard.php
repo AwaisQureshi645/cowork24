@@ -1,6 +1,6 @@
 <?php
 session_start();
-
+$created_by = $_SESSION['username'];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -261,7 +261,7 @@ session_start();
                 <i class="fa-solid fa-envelope"></i>
                 <i class="fa-sharp fa-solid fa-bell"></i>
                 <div style="display:flex;gap: 10px;">
-                    <p>Sir Arslan</p>
+                <p><?php echo $created_by; ?></p>
                 <img class="user_avatar" src="./user.png" alt="Logo">
 
                 </div>

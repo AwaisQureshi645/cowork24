@@ -1,6 +1,6 @@
 body{
     font-family: Arial, sans-serif;
-            background: #f4f4f4 !important;
+            background: #e2e1e1 !important;
             padding: 20px;
     
 }
@@ -21,10 +21,20 @@ body{
     border-radius: 5px;
     text-align: center;
     transition: background-color 0.3s ease;
+    border: 1px solid white !important;
 }
 .btn:hover {
     background-color: #e64a19 !important;
 }
+.pagination a.active {
+    background-color: #ff8905 !important;
+    border: 1px solid white !important;
+}
+
+.delete-btn {
+    background-color: red !important;
+}
+
 button {
     padding: 12px;
     color: #fff;
@@ -32,8 +42,22 @@ button {
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 12px;
 }
+
 button:hover{
    background-color:#e64a19 !important;
+}
+
+
+th{
+    background-color: #464646 !important;
+    color: white;
+  padding: 3px !important;
+
+
+}
+.dashboard {
+height: auto !important;
+margin-top: 5rem !important;
 }

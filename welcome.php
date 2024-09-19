@@ -1,8 +1,9 @@
 <?php
 session_start();
-function getTotalSeats() {
-// Database connection
-$conn = new mysqli("localhost", "root", "", "coworker");
+function getTotalSeats()
+{
+    // Database connection
+    $conn = new mysqli("localhost", "root", "", "coworker");
 
     // Check connection
     if ($conn->connect_error) {
@@ -17,9 +18,10 @@ $conn = new mysqli("localhost", "root", "", "coworker");
     return $row['total'];
 }
 
-function getSeatsByBranch($branch_id) {
-   // Database connection
-   $conn = new mysqli("localhost", "root", "", "coworker");
+function getSeatsByBranch($branch_id)
+{
+    // Database connection
+    $conn = new mysqli("localhost", "root", "", "coworker");
 
     // Check connection
     if ($conn->connect_error) {
@@ -33,11 +35,67 @@ function getSeatsByBranch($branch_id) {
     $result = $stmt->get_result();
     $row = $result->fetch_assoc();
 
+
+
+
+
+
+
+
+
+
     $conn->close();
     return $row['total'];
 }
+function getPendingPayments()
+{
+    // Database connection
+    $conn = new mysqli("localhost", "root", "", "coworker");
 
-function getAvailableSeats() {
+    // Check connection
+    if ($conn->connect_error) {
+        echo "<script>alert('Connection failed: " . $conn->connect_error . "');</script>";
+        return; // Stop execution if the connection fails
+    }
+
+    try {
+        $sql = "SELECT b.booking_id, t.TeamName, b.office_id, b.contract_id, b.booking_date, b.rent_amount, b.rent_status, b.rent_payment_date, b.security_deposit_amount, b.security_deposit_status, b.security_deposit_payment_date 
+                FROM office_bookings b
+                JOIN team t ON b.team_id = t.TeamID";
+
+        $result_pending = $conn->query($sql);
+
+        if (!$result_pending) {
+            throw new Exception("Query failed: " . $conn->error);
+        }
+
+        $results = [];
+
+        while ($row = $result_pending->fetch_assoc()) {
+            $results[] = [
+                'Booking ID' => $row['booking_id'],
+                'Team Name' => $row['TeamName'],
+                'Rent Status' => $row['rent_status'],
+                'Security Deposit Status' => $row['security_deposit_status']
+            ];
+        }
+
+        if (empty($results)) {
+            echo "<script>alert('No records found');</script>";
+        }
+
+        $conn->close();
+        return $results;
+    } catch (Exception $e) {
+        echo "<script>alert('An error occurred: " . $e->getMessage() . "');</script>";
+        return [];
+    }
+}
+
+
+
+function getAvailableSeats()
+{
     // Database connection
     $conn = new mysqli("localhost", "root", "", "coworker");
 
@@ -54,7 +112,8 @@ function getAvailableSeats() {
     return $row['total'];
 }
 
-function getOccupiedSeats() {
+function getOccupiedSeats()
+{
     // Database connection
     $conn = new mysqli("localhost", "root", "", "coworker");
 
@@ -70,7 +129,8 @@ function getOccupiedSeats() {
     $conn->close();
     return $row['total'];
 }
-function getBranchSeatData() {
+function getBranchSeatData()
+{
     // Database connection
     $conn = new mysqli("localhost", "root", "", "coworker");
 
@@ -120,14 +180,14 @@ function getBranchSeatData() {
             padding: 0;
             background: linear-gradient(135deg, #01899f 0%, #01abc6 100%);
             color: #333;
-            border: none ;
+            border: none;
         }
 
         .container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-            padding: 20px;
+    grid-template-columns: 2fr 1fr; /* Two columns: first one is twice the size of the second */
+    gap: 20px;
+    padding: 20px;
         }
 
         .widget,
@@ -163,11 +223,11 @@ function getBranchSeatData() {
         }
 
         .announcement {
-            grid-column: span 2; 
+            grid-column: span 2;
         }
 
         .calendar {
-            grid-column: span 2; 
+            grid-column: span 2;
         }
 
         .calendar iframe {
@@ -242,10 +302,12 @@ function getBranchSeatData() {
             box-sizing: border-box;
             display: none;
         }
+
         .stats {
             display: flex;
             justify-content: space-around;
         }
+
         .stat {
             background-color: #ffffff;
             border: 1px solid #3498db;
@@ -255,65 +317,155 @@ function getBranchSeatData() {
             width: 23%;
             text-align: center;
         }
+
         .stat.available {
             background-color: #d4edda;
         }
+
         .stat.occupied {
             background-color: #f8d7da;
         }
+        th{
+    background-color: #464646 !important;
+    color: white;
+  padding: 3px !important;
+
+
+}
+    
     </style>
 </head>
 
 <body>
 
     <div class="container" id="dashboardContainer">
-    <div class="widget">
-        <h2>Seat Statistics Per Branch</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Branch Name</th>
-                    <th>Total Seats</th>
-                    <th>Available Seats</th>
-                    <th>Occupied Seats</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-                $branchData = getBranchSeatData();
-                foreach ($branchData as $branch) {
-                    echo "<tr>";
-                    echo "<td>" . htmlspecialchars($branch['branch_name']) . "</td>";
-                    echo "<td>" . htmlspecialchars($branch['total_seats']) . "</td>";
-                    echo "<td class='stat available'>" . htmlspecialchars($branch['available_seats']) . "</td>";
-                    echo "<td class='stat occupied'>" . htmlspecialchars($branch['occupied_seats']) . "</td>";
-                    echo "</tr>";
-                }
-                ?>
-            </tbody>
-        </table>
-    </div>
-    <div class="widget">
+        <div class="widget">
+            <h2>Seat Statistics Per Branch</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Branch Name</th>
+                        <th>Total Seats</th>
+                        <th>Available Seats</th>
+                        <th>Occupied Seats</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    $branchData = getBranchSeatData();
+                    foreach ($branchData as $branch) {
+                        echo "<tr>";
+                        echo "<td>" . htmlspecialchars($branch['branch_name']) . "</td>";
+                        echo "<td>" . htmlspecialchars($branch['total_seats']) . "</td>";
+                        echo "<td class='stat available'>" . htmlspecialchars($branch['available_seats']) . "</td>";
+                        echo "<td class='stat occupied'>" . htmlspecialchars($branch['occupied_seats']) . "</td>";
+                        echo "</tr>";
+                    }
+                    ?>
+                </tbody>
+            </table>
+        </div>
+        <!-- <div class="widget">
             <h2>Active Bookings</h2>
             <p><?php echo getActiveBookings(); ?></p>
-        </div>
+        </div> -->
 
-<!-- testing -->
+        <!-- testing -->
 
-    
-        <div class="widget">
+
+        <div class="widget" >
             <h2>Total Employees</h2>
             <p><?php echo getTotalEmployees(); ?></p>
+
+            <h2>Active Bookings</h2>
+            <p><?php echo getActiveBookings(); ?></p>
+
+
+
+
         </div>
+
+
+
+
+        
         <div class="widget calendar">
             <h2>Upcoming Events</h2>
             <iframe src="https://calendar.google.com/calendar/embed?src=cowork24management%40gmail.com&ctz=Asia/Karachi" frameborder="0"></iframe>
         </div>
 
-       
+
 
         <div class="widget">
+
             <button onclick="toggleInventoryOptions()">Inventory of cowork-24</button>
+            <?php
+            // Database connection
+            $conn = new mysqli("localhost", "root", "", "coworker");
+
+            // Check connection
+            if ($conn->connect_error) {
+                die("Connection failed: " . $conn->connect_error);
+            }
+
+            // Fetch data with filtering for pending statuses
+            $sql = "SELECT b.booking_id, t.TeamName, b.office_id, b.contract_id, b.booking_date, b.rent_amount, b.rent_status, b.rent_payment_date, b.security_deposit_amount, b.security_deposit_status, b.security_deposit_payment_date 
+        FROM office_bookings b
+        JOIN team t ON b.team_id = t.TeamID
+        WHERE b.rent_status = 'pending' OR b.security_deposit_status = 'pending'";
+            $result = $conn->query($sql);
+
+            // Table structure
+            echo "<table border='1' cellpadding='10'>
+        <thead>
+            <tr>
+                <th>Booking ID</th>
+                <th>Team Name</th>
+              
+                <th>Security Deposit Status</th>
+            </tr>
+        </thead>
+        <tbody>";
+
+            // Display data
+            if ($result->num_rows > 0) {
+                while ($row = $result->fetch_assoc()) {
+                    // Add a 'pending' class if the rent or security deposit status is 'Pending'
+                    $depositStatusClass = ($row['security_deposit_status'] === 'pending') ? 'pending' : '';
+
+                    echo "<tr>
+                <td>{$row['booking_id']}</td>
+                <td>{$row['TeamName']}</td>
+              
+                <td class='$depositStatusClass'>{$row['security_deposit_status']}</td>
+            </tr>";
+                }
+            } else {
+                echo "<tr><td colspan='4'>No records found</td></tr>";
+            }
+
+            echo "</tbody></table>";
+
+            // Close connection
+            $conn->close();
+            ?>
+
+
+
+
+
+
+
+
+            <!-- show pending results -->
+
+
+
+
+
+
+
+
             <div class="inventory-options" id="inventoryOptions">
                 <button onclick="loadContent('select_branch.php')">View Inventory</button>
                 <button onclick="loadContent('add_inventory.php')">Add Inventory</button>
@@ -350,7 +502,7 @@ function getBranchSeatData() {
                 .catch(error => console.error('Error loading content:', error));
         }
 
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             fetch('booking_trends.php')
                 .then(response => response.json())
                 .then(data => {
@@ -402,7 +554,8 @@ function getBranchSeatData() {
 
     <?php
 
-    function getTotalEmployees() {
+    function getTotalEmployees()
+    {
         $conn = new mysqli('localhost', 'root', '', 'coworker');
         if ($conn->connect_error) {
             die('Connection failed: ' . $conn->connect_error);
@@ -421,7 +574,8 @@ function getBranchSeatData() {
         $conn->close();
     }
 
-    function getActiveBookings() {
+    function getActiveBookings()
+    {
         $conn = new mysqli('localhost', 'root', '', 'coworker');
         if ($conn->connect_error) {
             die('Connection failed: ' . $conn->connect_error);

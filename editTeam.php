@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     $TeamName = $row['TeamName'];
     $JoiningDate = $row['JoiningDate'];
     $EndingDate = $row['EndingDate'];
-    $Discount = $row['Discount'];
+    // $Discount = $row['Discount'];
     $SecurityAmount = $row['SecurityAmount'];
     $PointofContact = $row['PointofContact'];
     $Reference = $row['Reference'];
@@ -56,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         $TeamName = $conn->real_escape_string($_POST['TeamName']);
         $JoiningDate = $conn->real_escape_string($_POST['JoiningDate']);
         $EndingDate = $conn->real_escape_string($_POST['EndingDate']);
-        $Discount = $conn->real_escape_string($_POST['Discount']);
+        // $Discount = $conn->real_escape_string($_POST['Discount']);
         $SecurityAmount = $conn->real_escape_string($_POST['SecurityAmount']);
         $PointofContact = $conn->real_escape_string($_POST['PointofContact']);
         $Reference = $conn->real_escape_string($_POST['Reference']);
@@ -175,7 +175,7 @@ $conn->close();
 </head>
 <body>
     <div class="container">
-        <a href="logout.php" class="logout-button">Logout</a>
+       
         <h2>Edit Team Data</h2>
         <?php if (!empty($errormessage)): ?>
             <p class="message"><?= htmlspecialchars($errormessage) ?></p>
@@ -194,9 +194,7 @@ $conn->close();
             <input type="text" id="JoiningDate" name="JoiningDate" value="<?= htmlspecialchars($JoiningDate) ?>" required>
             <label for="EndingDate">EndingDate:</label>
             <input type="text" id="EndingDate" name="EndingDate" value="<?= htmlspecialchars($EndingDate) ?>" required>
-            <label for="Discount">Discount:</label>
-            <input type="text" id="Discount" name="Discount" value="<?= htmlspecialchars($Discount) ?>" required>
-            <label for="SecurityAmount">SecurityAmount:</label>
+             <label for="SecurityAmount">SecurityAmount:</label>
             <input type="text" id="SecurityAmount" name="SecurityAmount" value="<?= htmlspecialchars($SecurityAmount) ?>" required>
             <label for="PointofContact">PointofContact:</label>
             <input type="text" id="PointofContact" name="PointofContact" value="<?= htmlspecialchars($PointofContact) ?>" required>

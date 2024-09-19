@@ -158,8 +158,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body>
     <div class="form-container">
         <h2>Add Individual Coworker</h2>
-        <a href="logout.php" class="logout-button">Logout</a>
-        <form action="" method="post">
+        
+        <form action="" method="post" class="form-container">
             <label for="name">Name:</label>
             <input type="text" id="name" name="name" required>
 

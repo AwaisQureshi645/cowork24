@@ -123,8 +123,12 @@ $conn->close();
     <link rel="stylesheet" href="style.css">
 
     <style>
+        body{
+            background-color: white !important;
+        }
         .container {
             margin-top: 30px;
+            background-color: white;
         }
         .logout-button {
             position: absolute;

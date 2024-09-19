@@ -54,11 +54,8 @@ $total_pages = ceil($total_results / $results_per_page);
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(to right, #007bff, #00d4ff);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
+         
+           margin-top: -5rem !important;
         }
 
         .dashboard {
@@ -85,7 +82,7 @@ $total_pages = ceil($total_results / $results_per_page);
         }
 
         th, td {
-            padding: 12px 15px;
+            padding: 1px 7px;
             border: 1px solid #ddd;
             text-align: center;
         }
@@ -179,7 +176,7 @@ $total_pages = ceil($total_results / $results_per_page);
     <div class="dashboard">
  
         <h2>Team Information</h2>
-        <div style="text-align: right;">
+        <div style="text-align: right; margin-top: -4rem">
             <a class="btn btn-primary" href="add_coworker.php" role="button">Add New Team</a>
         </div>
         <div id="employeeTable">
@@ -190,7 +187,7 @@ $total_pages = ceil($total_results / $results_per_page);
                         <th>TeamName</th>
                         <th>JoiningDate</th>
                         <th>EndingDate</th>
-                        <th>Discount</th>
+                   
                         <th>SecurityAmount</th>
                         <th>POC</th>
                         <th>Reference</th>
@@ -206,7 +203,7 @@ $total_pages = ceil($total_results / $results_per_page);
                                 <td>{$row['TeamName']}</td>
                                 <td>{$row['JoiningDate']}</td>
                                 <td>{$row['EndingDate']}</td>
-                                <td>{$row['Discount']}</td>
+
                                 <td>{$row['SecurityAmount']}</td>
                                 <td>{$row['PointofContact']}</td>
                                 <td>{$row['Reference']}</td>

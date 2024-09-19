@@ -21,8 +21,7 @@ if (!isset($_SESSION['role']) ||
     exit();
 }
 
-
-$results_per_page = 4;
+$results_per_page = 6;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $start_from = ($page - 1) * $results_per_page;
 
@@ -47,46 +46,40 @@ $total_pages = ceil($total_results / $results_per_page);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>visits</title>
+    <title>Visits</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" rel="stylesheet">
     <link rel="icon" href="cowork-logo.PNG">
     <link rel="stylesheet" href="style.css">
-
+    
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f0f2f5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            
+      
             margin: 0;
         }
-
         .dashboard {
-            width: 90%;
+            width: 100%;
             max-width: 1800px;
             background-color: white;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
             border-radius: 10px;
             padding: 20px;
-            height: 90%;
-            
+            margin-top: -1rem !important;
+          
         }
-
         h2 {
             margin-bottom: 20px;
             color: #333;
             text-align: center;
         }
-
         .table-container {
-            overflow-x: auto; /* Allows horizontal scrolling if the table is too wide */
-            width: 100%; /* Ensures the container takes full width */
-            margin-bottom: 20px;
+            overflow-x: auto;
+            width: 100%;
+           
         }
-
         table {
             width: 100%;
             border-collapse: collapse;
@@ -94,26 +87,21 @@ $total_pages = ceil($total_results / $results_per_page);
             font-size: 16px;
             text-align: left;
         }
-
         th, td {
-            padding: 12px 15px;
+            padding: 1px 7px;
             border: 1px solid #ddd;
             text-align: center;
         }
-
         th {
-            background-color: #007bff;
+            background-color: #464646;
             color: white;
         }
-
         tr:nth-child(even) {
             background-color: #f9f9f9;
         }
-
         tr:hover {
             background-color: #f1f1f1;
         }
-
         a.btn {
             text-decoration: none;
             color: white;
@@ -122,21 +110,17 @@ $total_pages = ceil($total_results / $results_per_page);
             margin: 0 2px;
             display: inline-block;
         }
-
         .btn-primary {
             background-color: #007bff;
         }
-
         .btn-danger {
             background-color: #dc3545;
         }
-
         .pagination {
             display: flex;
             justify-content: center;
             margin: 20px 0;
         }
-
         .pagination a {
             color: #007bff;
             padding: 8px 16px;
@@ -145,24 +129,20 @@ $total_pages = ceil($total_results / $results_per_page);
             margin: 0 4px;
             border-radius: 4px;
         }
-
         .pagination a.active {
             background-color: #007bff;
             color: white;
             border: 1px solid #007bff;
         }
-
         .pagination a:hover {
             background-color: #ddd;
         }
-
         .icbtn {
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 10px;
         }
-
         .hidden {
             display: none;
         }
@@ -180,31 +160,30 @@ $total_pages = ceil($total_results / $results_per_page);
             border: none;
             cursor: pointer;
         }
-
         .logout-button:hover {
             background: #c82333;
         }
     </style>
 </head>
 <body>
-    <div class="dashboard">
-   
-        <h2>Visitor's Information</h2>
-        
+    <div class="dashboard " >
+      
         <div id="table-container" class="table-container">
             <table>
                 <thead>
                     <tr>
-                        <th>sno</th>
-                        <th>name</th>
-                        <th>email</th>
+                        <th>S.No</th>
+                        <th>Name</th>
+                        <th>Email</th>
                         <th>Business Details</th>
-                        <th>PhoneNumber</th>
+                        <th>Phone Number</th>
                         <th>Branch</th>
-                        <th>Comments</th>
+                       
                         <th>Assigned to </th>
-                        <th>RegistrationDate</th>
-                        <th>AppointmentDate</th>
+                        <th>Registration Date</th>
+                        <th>Appointment Date</th>
+                        <th>Comments</th>
+                        <th>Actions</th> <!-- New column for Edit/Delete -->
                     </tr>
                 </thead>
                 <tbody>
@@ -217,10 +196,15 @@ $total_pages = ceil($total_results / $results_per_page);
                                 <td>{$row['businessDetails']}</td>
                                 <td>{$row['phonenumber']}</td>
                                 <td>{$row['branch_name']}</td>
-                                <td>{$row['Comments']}</td>
+                                
                                 <td>{$row['assignedTo']}</td>
                                 <td>{$row['registration_date']}</td>
                                 <td>{$row['appointment_date']}</td>
+                                <td>{$row['Comments']}</td>
+                                <td class='icbtn'>
+                                    <a href='editVistorInfo.php?sno={$row['sno']}  ' class='btn btn-primary'>Edit</a>
+                                    <a href='deleteVistorInfo.php?sno={$row['sno']}' class='btn btn-danger' onclick='return confirm(\"Are you sure you want to delete this entry?\");'>Delete</a>
+                                </td>
                               </tr>";
                     }
                     ?>

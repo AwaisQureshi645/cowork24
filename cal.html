@@ -5,8 +5,6 @@
   <meta charset="utf-8" />
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f9; color: #333; }
-    button { padding: 10px 20px; margin: 10px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 5px; font-size: 16px; }
-    button:hover { background-color: #0056b3; }
     #form-container { margin-top: 20px; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background-color: #fff; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
     h2 { color: #007bff; margin-bottom: 20px; }
     label { display: block; margin-top: 10px; font-weight: bold; }
@@ -23,8 +21,6 @@
 </head>
 <body>
   <h1>Google Calendar API</h1>
-  <button id="authorize_button" onclick="handleAuthClick()">Authorize</button>
-  <button id="signout_button" onclick="handleSignoutClick()" style="visibility: hidden;">Sign Out</button>
 
   <div id="form-container" style="display: none;">
     <h2>Create or Edit Event</h2>
@@ -56,8 +52,8 @@
   <script type="text/javascript">
    const CLIENT_ID = "269162590647-alh83bvusko86o4svfge4lsl5abn1c08.apps.googleusercontent.com";
    const API_KEY = "AIzaSyCciXrg_icHlFR-hn-ROqWp9KP4QW0Z5eE";
-    const DISCOVERY_DOC = "https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest";
-    const SCOPES = "https://www.googleapis.com/auth/calendar";
+   const DISCOVERY_DOC = "https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest";
+   const SCOPES = "https://www.googleapis.com/auth/calendar";
 
     let tokenClient;
     let gapiInited = false;
@@ -74,7 +70,7 @@
         discoveryDocs: [DISCOVERY_DOC],
       });
       gapiInited = true;
-      maybeEnableButtons();
+      checkIfAuthorized();
     }
 
     function gisLoaded() {
@@ -84,7 +80,21 @@
         callback: handleAuthResponse,
       });
       gisInited = true;
-      maybeEnableButtons();
+      checkIfAuthorized();
+    }
+
+    // Check if user is already authorized
+    function checkIfAuthorized() {
+      const token = sessionStorage.getItem('google_token');
+      if (token) {
+        gapi.client.setToken({ access_token: token });
+        document.getElementById("form-container").style.display = "block";
+        listUpcomingEvents();
+        loadRooms();
+      } else if (gapiInited && gisInited) {
+        // If not authorized, auto-trigger the authorization
+        handleAuthClick();
+      }
     }
 
     function handleAuthResponse(resp) {
@@ -93,40 +103,31 @@
         document.getElementById("content").innerText = `Authorization error: ${resp.error}`;
         return;
       }
-      document.getElementById("signout_button").style.visibility = "visible";
-      document.getElementById("authorize_button").innerText = "Refresh";
+
+      sessionStorage.setItem('google_token', resp.access_token); // Store token in sessionStorage
+
       document.getElementById("form-container").style.display = "block";
       listUpcomingEvents();
       loadRooms();
     }
 
-    function maybeEnableButtons() {
-      if (gapiInited && gisInited) {
-        document.getElementById("authorize_button").style.visibility = "visible";
-      }
-    }
-
     function handleAuthClick() {
-      if (tokenClient) {
-        if (gapi.client.getToken() === null) {
-          tokenClient.requestAccessToken({ prompt: "consent" });
-        } else {
-          tokenClient.requestAccessToken({ prompt: "" });
-        }
+      if (gapi.client.getToken() === null) {
+        tokenClient.requestAccessToken({ prompt: "consent" });
       } else {
-        console.error("Token client is not initialized.");
+        tokenClient.requestAccessToken({ prompt: "" });
       }
     }
 
+    // No signout required since we want the authorization to persist
     function handleSignoutClick() {
+      sessionStorage.removeItem('google_token');
       const token = gapi.client.getToken();
       if (token !== null) {
         google.accounts.oauth2.revoke(token.access_token);
         gapi.client.setToken("");
-        document.getElementById("content").innerText = "";
-        document.getElementById("authorize_button").innerText = "Authorize";
-        document.getElementById("signout_button").style.visibility = "hidden";
         document.getElementById("form-container").style.display = "none";
+        alert("Signed out. You will need to authorize again.");
       }
     }
 
@@ -225,243 +226,193 @@
 
     document.getElementById("create_event_button").addEventListener("click", createEvent);
     async function createEvent() {
-  const summary = document.getElementById("summary").value;
-  const location = document.getElementById("location").value;
-  const description = document.getElementById("description").value;
-  const start = document.getElementById("start").value;
-  const end = document.getElementById("end").value;
-  const roomType = document.getElementById("room_type").value;
-  const roomId = document.getElementById("room").value;
-  const roomName = document.getElementById("room").selectedOptions[0].text;
+      const summary = document.getElementById("summary").value;
+      const location = document.getElementById("location").value;
+      const description = document.getElementById("description").value;
+      const start = document.getElementById("start").value;
+      const end = document.getElementById("end").value;
+      const roomType = document.getElementById("room_type").value;
+      const roomId = document.getElementById("room").value;
+      const roomName = document.getElementById("room").selectedOptions[0].text;
 
-  if (!summary || !location || !description || !start || !end || !roomType || !roomId) {
-    alert("Please fill in all fields.");
-    return;
-  }
-
- 
-  try {
-    const availabilityResponse = await fetch('/cowork/check_availability.php', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        roomId: roomId,
-        startTime: new Date(start).toISOString(),
-        endTime: new Date(end).toISOString(),
-        roomType: roomType
-      })
-    });
-
-    if (!availabilityResponse.ok) {
-      throw new Error("Network response was not ok");
-    }
-
-    const availabilityData = await availabilityResponse.json();
-    console.log("Room availability response:", availabilityData);
-
-    if (availabilityData.available) {
-     
-      const event = {
-        summary: summary,
-        location: location,
-        description: `${description}\nRoom Type: ${roomType}\nRoom: ${roomName}`,
-        start: {
-          dateTime: new Date(start).toISOString(),
-          timeZone: "Asia/Karachi",
-        },
-        end: {
-          dateTime: new Date(end).toISOString(),
-          timeZone: "Asia/Karachi",
-        },
-      };
+      if (!summary || !location || !description || !start || !end || !roomType || !roomId) {
+        alert("Please fill in all fields.");
+        return;
+      }
 
       try {
-        const eventResponse = await gapi.client.calendar.events.insert({
-          calendarId: "primary",
-          resource: event,
+        const availabilityResponse = await fetch('/cowork/check_availability.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            roomId: roomId,
+            startTime: new Date(start).toISOString(),
+            endTime: new Date(end).toISOString(),
+            roomType: roomType
+          })
         });
-        const eventId1 = eventResponse.result.id;
-await fetch('save_booking.php', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    eventId: eventId1,
-    roomId: roomId,
-    roomType: roomType,
-    startTime:  new Date(start).toISOString(), // Ensure it's an ISO string
-    endTime: new Date(end).toISOString(),     // Ensure it's an ISO string
-  })
-});
-console.log(eventResponse.result.id);
-        console.log("Event created:", eventResponse);
-        alert("Event created successfully: " + eventResponse.result.htmlLink);
-        listUpcomingEvents(); 
+
+        if (!availabilityResponse.ok) {
+          throw new Error("Network response was not ok");
+        }
+
+        const availabilityData = await availabilityResponse.json();
+        console.log("Room availability response:", availabilityData);
+
+        if (availabilityData.available) {
+          const event = {
+            summary: summary,
+            location: location,
+            description: `${description}\nRoom Type: ${roomType}\nRoom: ${roomName}`,
+            start: {
+              dateTime: new Date(start).toISOString(),
+              timeZone: "Asia/Karachi",
+            },
+            end: {
+              dateTime: new Date(end).toISOString(),
+              timeZone: "Asia/Karachi",
+            },
+          };
+
+          try {
+            const eventResponse = await gapi.client.calendar.events.insert({
+              calendarId: "primary",
+              resource: event,
+            });
+            const eventId1 = eventResponse.result.id;
+            await fetch('save_booking.php', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                eventId: eventId1,
+                roomId: roomId,
+                roomType: roomType,
+                startTime: new Date(start).toISOString(),
+                endTime: new Date(end).toISOString(),
+              })
+            });
+            console.log(eventResponse.result.id);
+            alert("Event created successfully: " + eventResponse.result.htmlLink);
+            listUpcomingEvents();
+          } catch (err) {
+            console.error("Error creating event:", err);
+            alert("Error creating event: " + err.message);
+          }
+        } else {
+          let alternativeRoomsHtml = "<h3>Selected room is not available. Please choose another room:</h3><ul>";
+
+          if (Array.isArray(availabilityData.alternatives)) {
+            availabilityData.alternatives.forEach(room => {
+              alternativeRoomsHtml += `<li>${room.name} (ID: ${room.id})</li>`;
+            });
+          } else {
+            alternativeRoomsHtml += "<li>No alternative rooms available.</li>";
+          }
+
+          alternativeRoomsHtml += "</ul>";
+          document.getElementById("content").innerHTML = alternativeRoomsHtml;
+        }
       } catch (err) {
-        console.error("Error creating event:", err);
-        alert("Error creating event: " + err.message);
+        console.error("Error checking room availability:", err);
+        alert("Error checking room availability: " + err.message);
       }
-    } else {
-      // Notify user and provide alternative rooms
-      let alternativeRoomsHtml = "<h3>Selected room is not available. Please choose another room:</h3><ul>";
+    }
 
-      if (Array.isArray(availabilityData.alternatives)) {
-        availabilityData.alternatives.forEach(room => {
-          alternativeRoomsHtml += `<li>${room.name} (ID: ${room.id})</li>`;
+    function formatDateForInput(date) {
+      const d = new Date(date);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const hours = String(d.getHours()).padStart(2, '0');
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    }
+
+    async function editEvent(eventId) {
+      try {
+        const response = await gapi.client.calendar.events.get({
+          calendarId: "primary",
+          eventId: eventId,
         });
-      } else {
-        alternativeRoomsHtml += "<li>No alternative rooms available.</li>";
+        const event = response.result;
+
+        document.getElementById("summary").value = event.summary;
+        document.getElementById("location").value = event.location;
+        document.getElementById("description").value = event.description;
+
+        const startDate = formatDateForInput(event.start.dateTime || event.start.date);
+        const endDate = formatDateForInput(event.end.dateTime || event.end.date);
+
+        document.getElementById("start").value = startDate;
+        document.getElementById("end").value = endDate;
+
+        document.getElementById("create_event_button").style.display = "none";
+        document.getElementById("update_event_button").style.display = "block";
+        currentEventId = eventId;
+      } catch (err) {
+        console.error("Error fetching event for editing:", err);
+        alert("Failed to load event for editing: " + err.message);
       }
-
-      alternativeRoomsHtml += "</ul>";
-
-      document.getElementById("content").innerHTML = alternativeRoomsHtml;
-    }
-  } catch (err) {
-    console.error("Error checking room availability:", err);
-    alert("Error checking room availability: " + err.message);
-  }
-}
-
-
-
-document.getElementById("update_event_button").addEventListener("click", async () => {
- 
-  const summary = document.getElementById("summary").value;
-  const location = document.getElementById("location").value;
-  const description = document.getElementById("description").value;
-  const start = document.getElementById("start").value;
-  const end = document.getElementById("end").value;
-  const roomId = document.getElementById("room").value;
-  const roomType = document.getElementById("room_type").value;
- // const eventId = "41s8m6ieb06qb1o7ph11vls7j0";
-  const eventId = currentEventId;
-  const event = {
-    summary,
-    location,
-    description,
-    start: { dateTime: new Date(start).toISOString() },
-    end: { dateTime: new Date(end).toISOString() },
-  };
- 
-  try {
-    
-    const request = {
-      calendarId: "primary",
-      eventId: eventId,
-      resource: event,
-    };
-    await gapi.client.calendar.events.update(request);
-    alert("Event updated successfully!");
-    listUpcomingEvents();
-    syncEventWithDatabase(event, roomId, roomType); // Sync updated event
-  } catch (err) {
-    console.error("Error updating event:", err);
-    alert("Failed to update event: " + err.message);
-  }
-});
-function formatDateForInput(date) {
-  const d = new Date(date);
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0'); // Months are zero-based
-  const day = String(d.getDate()).padStart(2, '0');
-  const hours = String(d.getHours()).padStart(2, '0');
-  const minutes = String(d.getMinutes()).padStart(2, '0');
-  return `${year}-${month}-${day}T${hours}:${minutes}`;
-}
-
-
-async function editEvent(eventId) {
-  try {
-    const response = await gapi.client.calendar.events.get({
-      calendarId: "primary",
-      eventId: eventId,
-    });
-    const event = response.result;
-
-    document.getElementById("summary").value = event.summary;
-    document.getElementById("location").value = event.location;
-    document.getElementById("description").value = event.description;
-    
-
-const startDate = formatDateForInput(event.start.dateTime || event.start.date);
-const endDate = formatDateForInput(event.end.dateTime || event.end.date);
-
-document.getElementById("start").value = startDate;
-document.getElementById("end").value = endDate;
-
-    document.getElementById("create_event_button").style.display = "none";
-    document.getElementById("update_event_button").style.display = "block";
-    currentEventId = eventId; // Make sure this is set
-  } catch (err) {
-    console.error("Error fetching event for editing:", err);
-    alert("Failed to load event for editing: " + err.message);
-  }
-}
-
-
-async function deleteEvent(eventId) {
-  try {
-    // Delete event from Google Calendar
-    await gapi.client.calendar.events.delete({
-      calendarId: "primary",
-      eventId: eventId, // Correctly pass the eventId here
-    });
-
-    // Notify the server to delete the event from the database
-    const response = await fetch('deleteevent.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ eventId: eventId }), // Correctly pass the eventId here
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to delete event from database');
     }
 
-    alert("Event deleted successfully!");
-    listUpcomingEvents();
-  } catch (err) {
-    console.error("Error deleting event:", err);
-    alert("Failed to delete event: " + err.message);
-  }
-}
+    async function deleteEvent(eventId) {
+      try {
+        await gapi.client.calendar.events.delete({
+          calendarId: "primary",
+          eventId: eventId,
+        });
+
+        const response = await fetch('deleteevent.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ eventId: eventId }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to delete event from database');
+        }
+
+        alert("Event deleted successfully!");
+        listUpcomingEvents();
+      } catch (err) {
+        console.error("Error deleting event:", err);
+        alert("Failed to delete event: " + err.message);
+      }
+    }
 
     async function syncEventWithDatabase(event, roomId, roomType) {
-  try {
-    const response = await fetch("save_booking.php", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        roomId: roomId,
-        eventId:currentEventId,
-        roomType: roomType,
-        startTime: event.start.dateTime,
-        endTime: event.end.dateTime
-      }),
-    });
+      try {
+        const response = await fetch("save_booking.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            roomId: roomId,
+            eventId: currentEventId,
+            roomType: roomType,
+            startTime: event.start.dateTime,
+            endTime: event.end.dateTime
+          }),
+        });
 
-    if (!response.ok) {
-      const text = await response.text();
-      console.error("Server error:", text);
-      throw new Error("Failed to sync with database");
+        if (!response.ok) {
+          const text = await response.text();
+          console.error("Server error:", text);
+          throw new Error("Failed to sync with database");
+        }
+
+        const result = await response.json();
+        console.log(result.success || "Event synced successfully with the database.");
+      } catch (err) {
+        console.error("Error syncing event with database:", err.message);
+      }
     }
 
-    const result = await response.json();
-    console.log(result.success || "Event synced successfully with the database.");
-  } catch (err) {
-    console.error("Error syncing event with database:", err.message);
-  }
-}
+  </script>
 
-
-
-
- 
-</script>
   <script src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
   <script src="https://accounts.google.com/gsi/client" async defer onload="gisLoaded()"></script>
 
