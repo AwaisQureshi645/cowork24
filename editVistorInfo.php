@@ -133,7 +133,9 @@ $branches_result = $conn->query($branches_sql);
             </div>
             <div class="mb-3">
                 <label for="appointmentDate" class="form-label">Appointment Date</label>
-                <input type="date" class="form-control" id="appointmentDate" name="appointmentDate" value="<?= htmlspecialchars($visitor['appointment_date']) ?>" required>
+                <!-- <input type="date" class="form-control" id="appointmentDate" name="appointmentDate" value="<?= htmlspecialchars($visitor['appointment_date']) ?>" required onclick="this.showPicker();"> -->
+                <input type="datetime-local" class="form-control" id="appointmentDate" name="appointmentDate" value="<?= htmlspecialchars($visitor['appointment_date']) ?>" required onclick="this.showPicker();">
+                <!-- <input type="date" class="form-control" id="appointmentDate" name="appointmentDate" value="<?= htmlspecialchars($visitor['appointment_date']) ?>" onclick="this.showPicker();"> -->
             </div>
             <button type="submit" class="btn btn-primary">Update</button>
             <a href="visits.php" class="btn btn-secondary">Cancel</a>

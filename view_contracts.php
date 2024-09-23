@@ -25,7 +25,7 @@ $sql = "
 FROM contracts
 LEFT JOIN coworkers ON contracts.coworker_id = coworkers.coworker_id
 LEFT JOIN team ON contracts.TeamID = team.TeamID
-";
+ORDER BY contracts.contract_id DESC"; 
 $result = $conn->query($sql);
 ?>
 
@@ -123,7 +123,7 @@ $result = $conn->query($sql);
         <table>
             <thead>
                 <tr>
-                    <th>Contract ID</th>
+                 
                     <th>Coworker Name</th>
                     <th>Contract Details</th>
                     <th>Start Date</th>
@@ -133,9 +133,9 @@ $result = $conn->query($sql);
                 </tr>
             </thead>
             <tbody>
-                <?php while ($row = $result->fetch_assoc()) { ?>
+                <?php while ($row = $result->fetch_assoc() ) { ?>
                     <tr>
-                        <td><?= htmlspecialchars($row['contract_id']) ?></td>
+                    
                         <td><?= htmlspecialchars($row['coworker_name']) ?></td>
                         <td><?= htmlspecialchars($row['contract_details']) ?></td>
                         <td><?= htmlspecialchars($row['start_date']) ?></td>
@@ -162,7 +162,7 @@ $result = $conn->query($sql);
                         </td>
                         <td>
                             <div class="action-buttons">
-                                <a href="edit_contract.php?contract_id=<?= htmlspecialchars($row['contract_id']) ?>" class="edit">Edit</a>
+                                <a href="edit_contract.php?contract_id=<?= htmlspecialchars($row['contract_id']) ?>" class="btn">Edit</a>
                                 <a href="delete_contract.php?contract_id=<?= htmlspecialchars($row['contract_id']) ?>" class="delete" onclick="return confirm('Are you sure you want to delete this contract?');">Delete</a>
                             </div>
                         </td>

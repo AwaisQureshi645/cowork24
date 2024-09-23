@@ -171,6 +171,13 @@ $conn->close();
         .logout-button:hover {
             background: #c82333;
         }
+        .form-group{
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group input{
+            padding: 9px;
+        }
     </style>
 </head>
 <body>
@@ -190,10 +197,15 @@ $conn->close();
      
            
          
-            <label for="JoiningDate">JoiningDate:</label>
-            <input type="text" id="JoiningDate" name="JoiningDate" value="<?= htmlspecialchars($JoiningDate) ?>" required>
-            <label for="EndingDate">EndingDate:</label>
-            <input type="text" id="EndingDate" name="EndingDate" value="<?= htmlspecialchars($EndingDate) ?>" required>
+            <div class="form-group">
+                    <label for="joining_date">Joining Date:</label>
+                    <input type="date" id="joining_date" name="joining_date" class="form-control" required onclick="this.showPicker();">
+                </div>
+
+                <div class="form-group">
+                    <label for="ending_date">Ending Date:</label>
+                    <input type="date" id="ending_date" name="ending_date" class="form-control" required onclick="this.showPicker();">
+                </div>
              <label for="SecurityAmount">SecurityAmount:</label>
             <input type="text" id="SecurityAmount" name="SecurityAmount" value="<?= htmlspecialchars($SecurityAmount) ?>" required>
             <label for="PointofContact">PointofContact:</label>

@@ -13,11 +13,13 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-if (!isset($_SESSION['role']) || 
-    ($_SESSION['role'] !== 'head' && 
-     $_SESSION['role'] !== 'financehead' && 
-     $_SESSION['role'] !== 'manager' && 
-     $_SESSION['role'] !== 'floorHost')) {
+if (
+    !isset($_SESSION['role']) ||
+    ($_SESSION['role'] !== 'head' &&
+        $_SESSION['role'] !== 'financehead' &&
+        $_SESSION['role'] !== 'manager' &&
+        $_SESSION['role'] !== 'floorHost')
+) {
     header('Location: access_denied.php');
     exit();
 }
@@ -38,8 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $RoomNo = $_POST['RoomNo'];
     $capacity = $_POST['capacity'];
     $Price = $_POST['Price'];
-    $branch_id = !empty($_POST['branch_id']) ? $_POST['branch_id'] : null; // Allow NULL
-    $status = $_POST['status'];
+    $branch_id = !empty($_POST['branch_id']) ? $_POST['branch_id'] : null; // Allow NULL for branch
+    $status = $_POST['status']; // Capture the status from the dropdown
 
     // Prepare and execute the statement
     $stmt = $conn->prepare("INSERT INTO office (RoomNo, capacity, Price, branch_id, status) 
@@ -48,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         die("Prepare failed: " . $conn->error);
     }
 
-    $stmt->bind_param("iiiss", $RoomNo, $capacity, $Price, $branch_id, $status);
+    $stmt->bind_param("siiss", $RoomNo, $capacity, $Price, $branch_id, $status);
 
     if ($stmt->execute()) {
         echo "Record inserted successfully.";
@@ -61,11 +63,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
+
 $conn->close();
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -98,7 +102,7 @@ $conn->close();
             border-radius: 12px;
             border: 5px solid #ddd;
             border-style: double;
-            overflow-y: auto; 
+            overflow-y: auto;
         }
 
         h2 {
@@ -120,7 +124,9 @@ $conn->close();
             margin-bottom: 5px;
         }
 
-        input[type="text"], input[type="number"], select {
+        input[type="text"],
+        input[type="number"],
+        select {
             padding: 12px;
             margin-bottom: 20px;
             border: 1px solid #ddd;
@@ -163,35 +169,42 @@ $conn->close();
         }
     </style>
 </head>
+
 <body>
     <div class="container">
- 
+
         <h2>Add New Office</h2>
         <form action="" method="post">
             <label for="RoomNo">Room Number:</label>
             <input type="text" id="RoomNo" name="RoomNo" required>
-            
+
             <label for="capacity">Capacity:</label>
             <input type="number" id="capacity" name="capacity" required>
-            
+
             <label for="Price">Price:</label>
             <input type="number" id="Price" name="Price" required>
-            
+
             <label for="branch_id">Select a branch (optional):</label>
-        <select id="branch_id" name="branch_id">
-            <option value="">Select a branch (optional)</option>
-            <?php
-            foreach ($branches as $branch) {
-                echo "<option value=\"{$branch['branch_id']}\">{$branch['branch_name']}</option>";
-            }
-            ?>
-        </select>
+            <select id="branch_id" name="branch_id">
+                <option value="">Select a branch (optional)</option>
+                <?php
+                foreach ($branches as $branch) {
+                    $selected = ($branch['branch_id'] == $row['branch_id']) ? 'selected' : ''; // Pre-select if editing an office
+                    echo "<option value=\"{$branch['branch_id']}\" $selected>{$branch['branch_name']}</option>";
+                }
+                ?>
+            </select>
+
 
             <label for="status">Status:</label>
-            <input type="text" id="status" name="status" required>
-            
+            <select id="status" name="status" required>
+                <option value="Available">Available</option>
+                <option value="Not Available">Not Available</option>
+            </select>
+
             <button type="submit">Submit</button>
         </form>
     </div>
 </body>
+
 </html>

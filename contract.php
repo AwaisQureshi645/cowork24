@@ -37,7 +37,6 @@ if (!$coworker_id) {
         $coworker_id = $team_id; // Use team_id if coworker_id is not valid
     }
 }
-
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $contract_details = $_POST['contract_details'];
     $start_date = $_POST['start_date'];
@@ -78,13 +77,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     // Insert contract into the database
-    $stmt = $conn->prepare("INSERT INTO contracts (coworker_id, contract_details, start_date, end_date, contract_copy) VALUES (?, ?, ?, ?, ?)");
-    $stmt->bind_param("issss", $coworker_id, $contract_details, $start_date, $end_date, $contract_copy);
 
+
+  
+        $stmt = $conn->prepare("INSERT INTO contracts (coworker_id, contract_details, start_date, end_date, contract_copy) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param("issss", $coworker_id, $contract_details, $start_date, $end_date, $contract_copy);
+    
+        
+  
+   
     if ($stmt->execute()) {
-        echo "<script>alert('Contract Submitted Successfully');</script>";
-        $stmt->close();
-        $conn->close();
+        // Redirect after successful insertion to avoid duplicate submission
         header('Location: view_contracts.php');
         exit();
     } else {
@@ -114,8 +117,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             max-width: 800px;
             margin: 0 auto;
         }
+        form{
+            padding: 0rem 2rem;
+        }
         h2 {
             margin-bottom: 20px;
+            padding-left: 2rem;
         }
         label {
             display: block;
@@ -143,15 +150,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         #start_date{
             margin-right: 1rem;
         }
-        #end_date{
-            margin-left: 1rem;
-        }
+     
     </style>
 </head>
 <body>
     <div class="form-container">
         <h2>Add Contract</h2>
-        <form action="" method="post" enctype="multipart/form-data">
+        <form action="" method="post" >
                <label for="contract_details">Contract Details:</label>
             <textarea id="contract_details" name="contract_details" rows="5" required></textarea>
             <label for="start_date">Start Date:</label>

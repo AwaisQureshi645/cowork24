@@ -89,9 +89,8 @@ $conn->close();
             background-position: center;
             display: flex;
             justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
+        
+            margin-top:-1rem ;
         }
         .container {
             width: 380px;
@@ -167,7 +166,7 @@ $conn->close();
 </head>
 <body>
     <div class="container">
-    <a href="logout.php" class="logout-button">Logout</a>
+  
         <h2>Edit MeetingRoom  Data</h2>
         <?php if (!empty($errormessage)): ?>
             <p class="message"><?= htmlspecialchars($errormessage) ?></p>

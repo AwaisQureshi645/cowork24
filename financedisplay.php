@@ -9,7 +9,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+          margin-top: -2rem;
             background-color: #f4f4f4;
         }
 
@@ -73,14 +73,22 @@
             background-color: #ffcccc; /* Light red background for pending payments */
             color: red; /* Red text for better visibility */
         }
+        .icbtn {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            min-height: 50px;
+         
+        }
     </style>
 </head>
 <body>
-    <h1>Finance</h1>
+
     <table>
         <thead>
             <tr>
-                <th>Booking ID</th>
+              
                 <th>Team Name</th>
                 <th>Office ID</th>
                 <th>Contract ID</th>
@@ -118,7 +126,7 @@
                     $depositStatusClass = ($row['security_deposit_status'] === 'pending') ? 'pending' : '';
 
                     echo "<tr>
-                        <td>{$row['booking_id']}</td>
+                     
                         <td>{$row['TeamName']}</td>
                         <td>{$row['office_id']}</td>
                         <td>{$row['contract_id']}</td>
@@ -129,7 +137,7 @@
                         <td>{$row['security_deposit_amount']}</td>
                         <td class='$depositStatusClass'>{$row['security_deposit_status']}</td>
                         <td>{$row['security_deposit_payment_date']}</td>
-                        <td>
+                        <td class='icbtn'>
                             <a href='editfinance.php?id={$row['booking_id']}' class='btn edit-btn'>Edit</a>
                             <a href='deletefinance.php?id={$row['booking_id']}' class='btn delete-btn' onclick='return confirm(\"Are you sure?\")'>Delete</a>
                         </td>

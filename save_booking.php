@@ -8,6 +8,7 @@ $input = file_get_contents("php://input");
 error_log('Raw input: ' . $input);
 
 $data = json_decode($input, true);
+error_log('Decoded input: ' . print_r($data, true));
 if (json_last_error() !== JSON_ERROR_NONE) {
     error_log('JSON decode error: ' . json_last_error_msg());
     http_response_code(400);
@@ -15,20 +16,34 @@ if (json_last_error() !== JSON_ERROR_NONE) {
     exit();
 }
 
-error_log('Decoded data: ' . print_r($data, true));
-
-if (!isset($data['eventId']) || !isset($data['roomId']) || !isset($data['startTime']) || !isset($data['endTime']) || !isset($data['roomType'])) {
-    http_response_code(400);
-    error_log('Error: Missing required fields');
-    echo json_encode(['error' => 'Missing required fields']);
-    exit();
-}
+// if (!isset($data['eventId']) || !isset($data['roomId']) || !isset($data['startTime']) || !isset($data['endTime']) || !isset($data['roomType']) || !isset($data['teamName']) || !isset($data['location']) || !isset($data['description']) || !isset($data['pointOfContact'])) {
+//     http_response_code(400);
+//     error_log('Error: Missing required fields');
+//     echo json_encode(['error' => 'Missing required fields']);
+//     exit();
+// }
 
 $eventId = $data['eventId'];
 $roomId = intval($data['roomId']);
 $startTime = date('Y-m-d H:i:s', strtotime($data['startTime']));
 $endTime = date('Y-m-d H:i:s', strtotime($data['endTime']));
 $roomType = $data['roomType'];
+$teamName = $data['teamName'];
+$location = $data['location'];
+$description = $data['description'];
+$pointOfContact = $data['pointOfContact']; // Get from JSON
+$summary = $data['summary'];
+echo json_encode([
+    'Event ID' => $eventId,
+    'Room ID' => $roomId,
+    'Start Time' => $startTime,
+    'End Time' => $endTime,
+    'Room Type' => $roomType,
+    'Team Name' => $teamName,
+    'Location' => $location,
+    'Description' => $description,
+    'Point of Contact' => $pointOfContact
+]);
 
 if (!in_array($roomType, ['meeting', 'huddle'])) {
     http_response_code(400);
@@ -51,13 +66,19 @@ if ($conn->connect_error) {
 }
 
 $stmt = $conn->prepare("
-    INSERT INTO bookings (event_id, room_id, room_type, start_time, end_time)
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO bookingsss (event_id, room_id, room_type, start_time, end_time, team_name, location, description, point_of_contact, summary)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON DUPLICATE KEY UPDATE
     room_id = VALUES(room_id),
     room_type = VALUES(room_type),
     start_time = VALUES(start_time),
-    end_time = VALUES(end_time)
+    end_time = VALUES(end_time),
+    team_name = VALUES(team_name),
+    location = VALUES(location),
+    description = VALUES(description),
+    point_of_contact = VALUES(point_of_contact),
+    summary = VALUES(summary)
+
 ");
 
 if (!$stmt) {
@@ -67,7 +88,7 @@ if (!$stmt) {
     exit();
 }
 
-$stmt->bind_param('sisss', $eventId, $roomId, $roomType, $startTime, $endTime);
+$stmt->bind_param('sissssssss', $eventId, $roomId, $roomType, $startTime, $endTime, $teamName, $location, $description, $pointOfContact, $summary);
 
 if ($stmt->execute()) {
     echo json_encode(['success' => 'Booking saved successfully']);

@@ -21,7 +21,7 @@ if (!isset($_SESSION['role']) ||
     exit();
 }
 
-$results_per_page = 3; 
+$results_per_page = 6; 
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $start_from = ($page - 1) * $results_per_page;
 
@@ -54,9 +54,8 @@ $total_pages = ceil($total_results / $results_per_page);
             background-color: #f0f2f5;
             display: flex;
             justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
+          
+            margin-top: -4rem; 
         }
 
         .dashboard {
@@ -71,7 +70,7 @@ $total_pages = ceil($total_results / $results_per_page);
         h2 {
             margin-bottom: 20px;
             color: #333;
-            text-align: center;
+           
         }
 
         table {
@@ -178,7 +177,7 @@ $total_pages = ceil($total_results / $results_per_page);
     <div class="dashboard">
   
         <h2>Meeting Room Information</h2>
-        <div style="text-align: right;">
+        <div style="text-align: right;margin-top: -4rem">
             <a class="btn btn-primary" href="/cowork/newmeeting.php" role="button">Add New Meeting Room</a>
         </div>
         <div id="meetingroomTable">

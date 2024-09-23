@@ -15,39 +15,77 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$contract_id = $_GET['contract_id'] ?? '';
+if (!isset($_GET['contract_id'])) {
+    die("Contract ID is required.");
+}
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Update contract details
-    $coworker_name = $_POST['coworker_name'];
+$contract_id = intval($_GET['contract_id']);
+
+// Fetch contract data
+$sql = "
+    SELECT contracts.*, COALESCE(coworkers.name, team.TeamName) AS coworker_name
+    FROM contracts
+    LEFT JOIN coworkers ON contracts.coworker_id = coworkers.coworker_id
+    LEFT JOIN team ON contracts.TeamID = team.TeamID
+    WHERE contracts.contract_id = ?
+";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param('i', $contract_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows > 0) {
+    $contract = $result->fetch_assoc();
+} else {
+    die("Contract not found.");
+}
+
+// Fetch list of coworkers for the dropdown
+$coworkers_sql = "SELECT coworker_id, name FROM coworkers";
+$coworkers_result = $conn->query($coworkers_sql);
+
+// Handle form submission
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $coworker_id = $_POST['coworker_id'];
     $contract_details = $_POST['contract_details'];
     $start_date = $_POST['start_date'];
     $end_date = $_POST['end_date'];
+    $team_id = isset($_POST['team_id']) ? $_POST['team_id'] : null;
 
-    $update_sql = "UPDATE contracts SET 
-        coworker_id = (SELECT coworker_id FROM coworkers WHERE name = ?),
-        contract_details = ?, 
-        start_date = ?, 
-        end_date = ? 
-        WHERE contract_id = ?";
+    // If a new file is uploaded, handle the file upload
+    $contract_copy = $contract['contract_copy'];
+    if (!empty($_FILES['contract_copy']['name'])) {
+        $file_tmp = $_FILES['contract_copy']['tmp_name'];
+        $file_name = basename($_FILES['contract_copy']['name']);
+        $target_dir = "uploads/contracts/";
+        $target_file = $target_dir . $file_name;
+
+        // Move the uploaded file to the desired location
+        if (move_uploaded_file($file_tmp, $target_file)) {
+            $contract_copy = $target_file;
+        } else {
+            die("File upload failed.");
+        }
+    }
+
+    // Update the contract in the database
+    $update_sql = "
+        UPDATE contracts 
+        SET coworker_id = ?, contract_details = ?, start_date = ?, end_date = ?, contract_copy = ?, TeamID = ?
+        WHERE contract_id = ?
+    ";
     $stmt = $conn->prepare($update_sql);
-    $stmt->bind_param("ssssi", $coworker_name, $contract_details, $start_date, $end_date, $contract_id);
+    $stmt->bind_param('issssii', $coworker_id, $contract_details, $start_date, $end_date, $contract_copy, $team_id, $contract_id);
 
     if ($stmt->execute()) {
-        header("Location: view_contracts.php");
+        header('Location: view_contracts.php');
         exit();
     } else {
         echo "Error updating contract: " . $conn->error;
     }
 }
 
-// Fetch contract data
-$sql = "SELECT * FROM contracts WHERE contract_id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $contract_id);
-$stmt->execute();
-$result = $stmt->get_result();
-$contract = $result->fetch_assoc();
+$conn->close();
 ?>
 
 <!DOCTYPE html>
@@ -55,99 +93,42 @@ $contract = $result->fetch_assoc();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
     <title>Edit Contract</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            /* color */
-            background: #eaeaea
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .container {
-            width: 400px;
-            padding: 20px;
-            background: #ffffff;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 20px;
-        }
-        form {
-            display: flex;
-            flex-direction: column;
-        }
-        label {
-            margin-top: 10px;
-            color: #555;
-            font-weight: 600;
-        }
-        input[type="text"],
-        textarea,
-        input[type="date"] {
-            padding: 10px;
-            margin: 5px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-        textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-        input[type="submit"] {
-            padding: 12px;
-            color: #fff;
-            background: #007bff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 20px;
-        }
-        input[type="submit"]:hover {
-            background: #0056b3;
-        }
-        .message {
-            text-align: center;
-            margin-bottom: 15px;
-        }
-        .message.error {
-            color: #d9534f;
-        }
-    </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
     <div class="container">
-        <h1>Edit Contract</h1>
-        <?php if ($contract): ?>
-            <form method="POST">
-                
-                <label for="contract_details">Contract Details:</label>
-                <textarea id="contract_details" name="contract_details" required><?php echo htmlspecialchars($contract['contract_details']); ?></textarea>
-                <label for="start_date">Start Date:</label>
-                <input type="date" id="start_date" name="start_date" value="<?php echo htmlspecialchars($contract['start_date']); ?>" required>
-                <label for="end_date">End Date:</label>
-                <input type="date" id="end_date" name="end_date" value="<?php echo htmlspecialchars($contract['end_date']); ?>" required>
-                <input type="submit" value="Update">
-            </form>
-        <?php else: ?>
-            <p class="message error">Contract not found.</p>
-        <?php endif; ?>
+        <h2>Edit Contract</h2>
+        <form method="POST" enctype="multipart/form-data">
+
+            <!-- Dropdown for Coworker Name -->
+            <div class="mb-3">
+    <label for="coworker_name" class="form-label">Coworker Name</label>
+    <input type="text" class="form-control" id="coworker_name" name="coworker_name" value="<?php echo htmlspecialchars($contract['coworker_name']); ?>" required>
+</div>
+
+            <div class="mb-3">
+                <label for="contract_details" class="form-label">Contract Details</label>
+                <textarea class="form-control" id="contract_details" name="contract_details" required><?php echo $contract['contract_details']; ?></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="start_date" class="form-label">Start Date</label>
+                <input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo $contract['start_date']; ?>" required>
+            </div>
+            <div class="mb-3">
+                <label for="end_date" class="form-label">End Date</label>
+                <input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo $contract['end_date']; ?>" required>
+            </div>
+            <div class="mb-3">
+                <label for="contract_copy" class="form-label">Contract Copy (PDF or Image)</label>
+                <input type="file" class="form-control" id="contract_copy" name="contract_copy" accept=".pdf,.jpg,.jpeg,.png">
+                <?php if (!empty($contract['contract_copy'])) { ?>
+                    <p>Current file: <a href="<?php echo $contract['contract_copy']; ?>" target="_blank">View</a></p>
+                <?php } ?>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Update Contract</button>
+        </form>
     </div>
 </body>
 </html>
-
-<?php
-$conn->close();
-?>

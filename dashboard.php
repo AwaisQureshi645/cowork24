@@ -1,6 +1,11 @@
 <?php
 session_start();
 $created_by = $_SESSION['username'];
+ // Debug: view all session variables
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+    header('Location: index.php');
+    exit();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -389,7 +394,7 @@ $created_by = $_SESSION['username'];
             <?php if ($_SESSION['role'] == 'head') : ?>
                 <div class="menu">
                     <div class="menuitem">
-                        <div class="menucontrol" onclick="navigateTo('cal.html')">
+                        <div class="menucontrol" onclick="navigateTo('cal.php')">
                             <div class="menushow">
                                 <i class="fa-solid fa-calendar-days"></i>
                                 <p>Bookings</p>
@@ -422,7 +427,7 @@ $created_by = $_SESSION['username'];
                             <i class="fa-sharp fa-solid fa-caret-down"></i>
                         </div>
                         <ul>
-                            <li onclick="navigateTo('office_bookings.php')"><a href="#">Office bookings</a></li>
+                            <!-- <li onclick="navigateTo('office_bookings.php')"><a href="#">Office bookings</a></li> -->
                             <li onclick="navigateTo('office.php')"><a href="#">Office</a></li>
                             <li onclick="navigateTo('meetingRoom.php')"><a href="#">Meeting Room</a></li>
                             <li onclick="navigateTo('huddleRoom.php')"><a href="#">Huddle Room</a></li>

@@ -27,9 +27,10 @@ $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $start_from = ($page - 1) * $results_per_page;
 
 $sql = "
-    SELECT o.OfficeID, o.RoomNo, o.capacity, 
+     SELECT o.OfficeID, o.RoomNo, o.capacity, 
            o.Price, o.branch_id, o.status
     FROM office o
+    ORDER BY o.OfficeID DESC
     LIMIT $start_from, $results_per_page
 ";
 
@@ -61,11 +62,9 @@ $total_pages = ceil($total_results / $results_per_page);
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f0f2f5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
+         display: flex;
+         justify-content: center;
+            margin-top: -4rem;
         }
 
         .dashboard {
@@ -76,7 +75,7 @@ $total_pages = ceil($total_results / $results_per_page);
             border-radius: 10px;
             padding: 20px;
             overflow-x: auto;
-            height: 85%;
+           
         }
 
         h2 {
@@ -189,14 +188,14 @@ $total_pages = ceil($total_results / $results_per_page);
     <div class="dashboard">
     
         <h2>Office Information</h2>
-        <div style="text-align: right;">
+        <div style="text-align: right;margin-top: -4rem">
             <a class="btn btn-primary" href="/cowork/newOffice.php" role="button">Add New Office</a>
         </div>
         <div id="employeeTable">
             <table>
                 <thead>
                     <tr>
-                        <th>OfficeID</th>
+                      
                         <th>RoomNo</th>
                         <th>Capacity</th>
                         <th>Price</th>
@@ -208,26 +207,33 @@ $total_pages = ceil($total_results / $results_per_page);
                 </thead>
                 <tbody>
                     <?php
-                    while ($row = $result->fetch_assoc()) {
+                    // while ($row = $result->fetch_assoc()) {
+
+
+                        while ($row = $result->fetch_assoc()) {
+                            // Determine the branch name based on branch_id
+                            $branch_name = ($row['branch_id'] == 1) ? 'Executive' : 
+                                           (($row['branch_id'] == 2) ? 'Premium' : 
+                                           (($row['branch_id'] == 3) ? 'I-10' : 'Unknown'));
+
+
                         echo "<tr>
-                                <td>{$row['OfficeID']}</td>
-                                <td>{$row['RoomNo']}</td>
-                                <td>{$row['capacity']}</td>
-                                <td>{$row['Price']}</td>
-                                
-                                <td>{$row['branch_id']}</td>
-                                <td>{$row['status']}</td>
-                                <td>
-                                    <div class='icbtn'>
-                                        <a class='btn btn-primary btn-sm' href='editOffice.php?OfficeID={$row['OfficeID']}' role='button'>
-                                            <i class='fa-solid fa-pen-to-square'></i>
-                                        </a>
-                                        <a class='btn btn-danger btn-sm' href='deleteOffice.php?OfficeID={$row['OfficeID']}' role='button'>
-                                            <i class='fa-solid fa-trash'></i>
-                                        </a>
-                                    </div>
-                                </td>
-                              </tr>";
+                        <td>{$row['RoomNo']}</td>
+                        <td>{$row['capacity']}</td>
+                        <td>{$row['Price']}</td>
+                        <td>{$row['branch_id']}</td>
+                        <td style='color: " . (empty($row['status']) ? 'red' : 'black') . ";'>" . (!empty($row['status']) ? $row['status'] : 'Not Available') . "</td>
+                        <td>
+                            <div class='icbtn'>
+                                <a class='btn btn-primary btn-sm' href='editOffice.php?OfficeID={$row['OfficeID']}' role='button'>
+                                    <i class='fa-solid fa-pen-to-square'></i>
+                                </a>
+                                <a class='btn btn-danger btn-sm' href='deleteOffice.php?OfficeID={$row['OfficeID']}' role='button'>
+                                    <i class='fa-solid fa-trash'></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>";
                     }
                     ?>
                 </tbody>

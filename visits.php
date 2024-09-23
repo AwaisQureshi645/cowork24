@@ -12,11 +12,13 @@ $conn = new mysqli($host, $username_db, $password_db, $dbname);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
-if (!isset($_SESSION['role']) || 
-    ($_SESSION['role'] !== 'head' && 
-     $_SESSION['role'] !== 'financehead' && 
-     $_SESSION['role'] !== 'manager' && 
-     $_SESSION['role'] !== 'floorHost')) {
+if (
+    !isset($_SESSION['role']) ||
+    ($_SESSION['role'] !== 'head' &&
+        $_SESSION['role'] !== 'financehead' &&
+        $_SESSION['role'] !== 'manager' &&
+        $_SESSION['role'] !== 'floorHost')
+) {
     header('Location: access_denied.php');
     exit();
 }
@@ -24,17 +26,30 @@ if (!isset($_SESSION['role']) ||
 $results_per_page = 6;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $start_from = ($page - 1) * $results_per_page;
+$branch_sql = "SELECT branch_id, branch_name FROM branches";
+$branch_result = $conn->query($branch_sql);
+// Determine the branch filter
+$branch_filter = '';
+if (isset($_GET['branch']) && $_GET['branch'] !== 'all') {
+    $branch_id = $conn->real_escape_string($_GET['branch']);
+    $branch_filter = " WHERE visitorsinfo.branch_id = '$branch_id'";
+}
 
+// Adjust the main query to include the branch filter
 $sql = "SELECT visitorsinfo.*, branches.branch_name 
         FROM visitorsinfo 
         JOIN branches ON visitorsinfo.branch_id = branches.branch_id 
+        $branch_filter
+        ORDER BY visitorsinfo.registration_date DESC
         LIMIT $start_from, $results_per_page";
+
 $result = $conn->query($sql);
 if (!$result) {
     die("Query failed: " . $conn->error);
 }
 
-$total_results_sql = "SELECT COUNT(*) FROM visitorsinfo";
+// Also adjust the total count query for pagination to respect the branch filter
+$total_results_sql = "SELECT COUNT(*) FROM visitorsinfo $branch_filter";
 $total_results_result = $conn->query($total_results_sql);
 $total_results_row = $total_results_result->fetch_row();
 $total_results = $total_results_row[0];
@@ -43,6 +58,7 @@ $total_pages = ceil($total_results / $results_per_page);
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -51,15 +67,16 @@ $total_pages = ceil($total_results / $results_per_page);
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" rel="stylesheet">
     <link rel="icon" href="cowork-logo.PNG">
     <link rel="stylesheet" href="style.css">
-    
+
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f0f2f5;
-            
-      
+
+
             margin: 0;
         }
+
         .dashboard {
             width: 100%;
             max-width: 1800px;
@@ -68,18 +85,21 @@ $total_pages = ceil($total_results / $results_per_page);
             border-radius: 10px;
             padding: 20px;
             margin-top: -1rem !important;
-          
+
         }
+
         h2 {
             margin-bottom: 20px;
             color: #333;
             text-align: center;
         }
+
         .table-container {
             overflow-x: auto;
             width: 100%;
-           
+
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -87,21 +107,27 @@ $total_pages = ceil($total_results / $results_per_page);
             font-size: 16px;
             text-align: left;
         }
-        th, td {
+
+        th,
+        td {
             padding: 1px 7px;
             border: 1px solid #ddd;
             text-align: center;
         }
+
         th {
             background-color: #464646;
             color: white;
         }
+
         tr:nth-child(even) {
             background-color: #f9f9f9;
         }
+
         tr:hover {
             background-color: #f1f1f1;
         }
+
         a.btn {
             text-decoration: none;
             color: white;
@@ -110,17 +136,21 @@ $total_pages = ceil($total_results / $results_per_page);
             margin: 0 2px;
             display: inline-block;
         }
+
         .btn-primary {
             background-color: #007bff;
         }
+
         .btn-danger {
             background-color: #dc3545;
         }
+
         .pagination {
             display: flex;
             justify-content: center;
             margin: 20px 0;
         }
+
         .pagination a {
             color: #007bff;
             padding: 8px 16px;
@@ -129,23 +159,30 @@ $total_pages = ceil($total_results / $results_per_page);
             margin: 0 4px;
             border-radius: 4px;
         }
+
         .pagination a.active {
             background-color: #007bff;
             color: white;
             border: 1px solid #007bff;
         }
+
         .pagination a:hover {
             background-color: #ddd;
         }
+
         .icbtn {
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 10px;
+            min-height: 50px;
+
         }
+
         .hidden {
             display: none;
         }
+
         .logout-button {
             position: absolute;
             top: 20px;
@@ -160,25 +197,42 @@ $total_pages = ceil($total_results / $results_per_page);
             border: none;
             cursor: pointer;
         }
+
         .logout-button:hover {
             background: #c82333;
         }
     </style>
 </head>
+
 <body>
-    <div class="dashboard " >
-      
+    <div class="dashboard ">
+
         <div id="table-container" class="table-container">
+
+            <form method="GET" action="">
+                <label for="branch">Select Branch:</label>
+                <select name="branch" id="branch" onchange="this.form.submit()">
+                    <option value="all">All Branches</option>
+                    <?php
+                    while ($branch_row = $branch_result->fetch_assoc()) {
+                        $selected = (isset($_GET['branch']) && $_GET['branch'] == $branch_row['branch_id']) ? 'selected' : '';
+                        echo "<option value='{$branch_row['branch_id']}' {$selected}>{$branch_row['branch_name']}</option>";
+                    }
+                    ?>
+                </select>
+            </form>
+
+
             <table>
                 <thead>
                     <tr>
-                        <th>S.No</th>
+
                         <th>Name</th>
                         <th>Email</th>
                         <th>Business Details</th>
                         <th>Phone Number</th>
                         <th>Branch</th>
-                       
+
                         <th>Assigned to </th>
                         <th>Registration Date</th>
                         <th>Appointment Date</th>
@@ -190,7 +244,7 @@ $total_pages = ceil($total_results / $results_per_page);
                     <?php
                     while ($row = $result->fetch_assoc()) {
                         echo "<tr>
-                                <td>{$row['sno']}</td>
+                                
                                 <td>{$row['name']}</td>
                                 <td>{$row['email']}</td>
                                 <td>{$row['businessDetails']}</td>
@@ -220,6 +274,7 @@ $total_pages = ceil($total_results / $results_per_page);
         </div>
     </div>
 </body>
+
 </html>
 
 <?php

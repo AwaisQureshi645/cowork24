@@ -23,9 +23,11 @@ if (
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-$results_per_page = 3;
+$results_per_page = 6;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $start_from = ($page - 1) * $results_per_page;
+$branch_filter = isset($_GET['branch']) ? intval($_GET['branch']) : '';
+$where_clause = $branch_filter ? " WHERE coworkusers.branch_id = $branch_filter" : '';
 
 $sql = "
     SELECT 
@@ -35,8 +37,10 @@ $sql = "
     FROM coworkusers
     LEFT JOIN team ON coworkusers.TeamId = team.TeamID
     LEFT JOIN branches ON coworkusers.branch_id = branches.branch_id
+    $where_clause
     LIMIT $start_from, $results_per_page
 ";
+
 $result = $conn->query($sql);
 if (!$result) {
     die("Query failed: " . $conn->error);
@@ -49,27 +53,23 @@ $total_results = $total_results_row[0];
 $total_pages = ceil($total_results / $results_per_page);
 ?>
 <script>
-    function filterTable() {
-        var teamFilter = document.getElementById('teamFilter').value.toLowerCase();
-        var branchFilter = document.getElementById('branchFilter').value.toLowerCase();
-        var table = document.querySelector('table tbody');
-        var rows = table.querySelectorAll('tr');
+   function filterTable() {
+    var branchFilter = document.getElementById('branchFilter').value.toLowerCase();
+    var table = document.querySelector('table tbody');
+    var rows = table.querySelectorAll('tr');
 
-        rows.forEach(row => {
-            var teamName = row.cells[7].textContent.toLowerCase();
-            var branchName = row.cells[8].textContent.toLowerCase();
-            var display = true;
+    rows.forEach(row => {
+        var branchName = row.cells[5].textContent.toLowerCase();
+        var display = true;
 
-            if (teamFilter && teamName.indexOf(teamFilter) === -1) {
-                display = false;
-            }
-            if (branchFilter && branchName.indexOf(branchFilter) === -1) {
-                display = false;
-            }
+        if (branchFilter && branchName.indexOf(branchFilter) === -1) {
+            display = false;
+        }
 
-            row.style.display = display ? '' : 'none';
-        });
-    }
+        row.style.display = display ? '' : 'none';
+    });
+}
+
 
 
     function toggleImage(element) {
@@ -94,12 +94,10 @@ $total_pages = ceil($total_results / $results_per_page);
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #e8f0fe;
-            margin: 0;
-            padding: 0;
+         
             display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
+            justify-content: center;  align-items: center;
+           margin-top: -4rem;
         }
 
         .dashboard {
@@ -153,7 +151,7 @@ $total_pages = ceil($total_results / $results_per_page);
 
         th,
         td {
-            padding: 12px 15px;
+            padding: 1px 8px;
             border: 1px solid #dee2e6;
             text-align: center;
         }
@@ -238,6 +236,9 @@ $total_pages = ceil($total_results / $results_per_page);
             text-align: right;
             margin-bottom: 20px;
         }
+        .add-employee-btn{
+            margin-top: -4rem;
+        }
     </style>
 </head>
 
@@ -249,7 +250,7 @@ $total_pages = ceil($total_results / $results_per_page);
             <a class="btn btn-primary" href="/cowork/newemployee.php" role="button">Add New Employee</a>
         </div>
         <div class="table-filters">
-            <select id="teamFilter" onchange="filterTable()">
+            <!-- <select id="teamFilter" onchange="filterTable()">
                 <option value="">All Teams</option>
                 <?php
                 $distinct_team_result = $conn->query("SELECT DISTINCT TeamID, TeamName FROM team");
@@ -259,32 +260,33 @@ $total_pages = ceil($total_results / $results_per_page);
                         <?php echo htmlspecialchars($row['TeamName']); ?>
                     </option>
                 <?php endwhile; ?>
-            </select>
+            </select> -->
 
-            <select id="branchFilter" onchange="filterTable()">
-                <option value="">All Branches</option>
-                <?php
-                $distinct_branch_result = $conn->query("SELECT DISTINCT branch_id, branch_name FROM branches");
-                while ($row = $distinct_branch_result->fetch_assoc()):
-                ?>
-                    <option value="<?php echo htmlspecialchars($row['branch_name']); ?>">
-                        <?php echo htmlspecialchars($row['branch_name']); ?>
-                    </option>
-                <?php endwhile; ?>
-            </select>
+            <select id="branchFilter" name="branchFilter" onchange="window.location.href = '?branch=' + this.value">
+    <option value="">All Branches</option>
+    <?php
+    $distinct_branch_result = $conn->query("SELECT DISTINCT branch_id, branch_name FROM branches");
+    while ($row = $distinct_branch_result->fetch_assoc()):
+    ?>
+        <option value="<?php echo htmlspecialchars($row['branch_id']); ?>">
+            <?php echo htmlspecialchars($row['branch_name']); ?>
+        </option>
+    <?php endwhile; ?>
+</select>
+
         </div>
         <div class="table-container">
             <table>
                 <thead>
                     <tr>
-                        <th>ID</th>
+                   
                         <th>CNIC</th>
                         <th>Name</th>
                         <th>Email</th>
-                        <th>Password</th>
+                        <!-- <th>Password</th> -->
                         <th>Phone Number</th>
                         <th>CNIC Picture</th>
-                        <th>Team Name</th>
+                   
                         <th>Branch Name</th>
                         <th>Action</th>
                     </tr>
@@ -292,11 +294,11 @@ $total_pages = ceil($total_results / $results_per_page);
                 <tbody>
                     <?php while ($row = $result->fetch_assoc()): ?>
                         <tr>
-                            <td><?php echo htmlspecialchars($row['id'] ?? ''); ?></td>
+                        
                             <td><?php echo htmlspecialchars($row['CNIC'] ?? ''); ?></td>
                             <td><?php echo htmlspecialchars($row['username'] ?? ''); ?></td>
                             <td><?php echo htmlspecialchars($row['email'] ?? ''); ?></td>
-                            <td><?php echo htmlspecialchars($row['password'] ?? ''); ?></td>
+                            <!-- <td><?php echo htmlspecialchars($row['password'] ?? ''); ?></td> -->
                             <td><?php echo htmlspecialchars($row['phonenumber'] ?? ''); ?></td>
                             <td>
 
@@ -305,9 +307,9 @@ $total_pages = ceil($total_results / $results_per_page);
                                     <img src="<?php echo htmlspecialchars($row['CNICpic'] ?? ''); ?>" alt="CNIC Picture">
                                 </div>
                             </td>
-                            <td><?php echo htmlspecialchars($row['TeamName'] ?? ''); ?></td>
+                       
                             <td><?php echo htmlspecialchars($row['branch_name'] ?? ''); ?></td>
-                            <td>
+                            <td style="display: flex">
 
                                 <a class="btn btn-primary" href="/cowork/editEmployee.php?id=<?php echo htmlspecialchars($row['id']); ?>" role="button">
                                     <i class="fas fa-edit"></i>

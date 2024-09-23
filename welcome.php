@@ -183,11 +183,38 @@ function getBranchSeatData()
             border: none;
         }
 
+        /* Accordion styles */
+        .accordion {
+            background-color: white;
+            color: #464646;
+            cursor: pointer;
+            padding: 18px;
+            width: 100%;
+            text-align: left;
+            border: none;
+            outline: none;
+            transition: 0.4s;
+            font-size: 18px;
+        }
+
+        .accordion.active,
+        .accordion:hover {
+            background-color: #ccc;
+        }
+
+        .panel {
+            padding: 0 18px;
+            display: none;
+            background-color: white;
+            overflow: hidden;
+        }
+
         .container {
             display: grid;
-    grid-template-columns: 2fr 1fr; /* Two columns: first one is twice the size of the second */
-    gap: 20px;
-    padding: 20px;
+            grid-template-columns: 2fr 1fr;
+            /* Two columns: first one is twice the size of the second */
+            gap: 20px;
+            padding: 20px;
         }
 
         .widget,
@@ -198,6 +225,10 @@ function getBranchSeatData()
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             padding: 20px;
             box-sizing: border-box;
+        }
+
+        .list_inventory {
+            padding: 10px !important;
         }
 
         .widget h2,
@@ -325,14 +356,14 @@ function getBranchSeatData()
         .stat.occupied {
             background-color: #f8d7da;
         }
-        th{
-    background-color: #464646 !important;
-    color: white;
-  padding: 3px !important;
+
+        th {
+            background-color: #464646 !important;
+            color: white;
+            padding: 3px !important;
 
 
-}
-    
+        }
     </style>
 </head>
 
@@ -373,7 +404,7 @@ function getBranchSeatData()
         <!-- testing -->
 
 
-        <div class="widget" >
+        <div class="widget">
             <h2>Total Employees</h2>
             <p><?php echo getTotalEmployees(); ?></p>
 
@@ -388,7 +419,7 @@ function getBranchSeatData()
 
 
 
-        
+
         <div class="widget calendar">
             <h2>Upcoming Events</h2>
             <iframe src="https://calendar.google.com/calendar/embed?src=cowork24management%40gmail.com&ctz=Asia/Karachi" frameborder="0"></iframe>
@@ -398,78 +429,81 @@ function getBranchSeatData()
 
         <div class="widget">
 
-            <button onclick="toggleInventoryOptions()">Inventory of cowork-24</button>
-            <?php
-            // Database connection
-            $conn = new mysqli("localhost", "root", "", "coworker");
+         
 
-            // Check connection
-            if ($conn->connect_error) {
-                die("Connection failed: " . $conn->connect_error);
-            }
+            <h2>Inventory Management</h2>
+            <ul style="cursor:pointer; padding-left: 0;">
+                <li class="list_inventory" onclick="loadContent('select_branch.php')">View Inventory</li>
+                <li class="list_inventory" onclick="loadContent('add_inventory.php')">Add Inventory</li>
+            </ul>
+            <button class="accordion">Pending Bookings</button>
+            <div class="panel">
+                <?php
+                // Database connection
+                $conn = new mysqli("localhost", "root", "", "coworker");
 
-            // Fetch data with filtering for pending statuses
-            $sql = "SELECT b.booking_id, t.TeamName, b.office_id, b.contract_id, b.booking_date, b.rent_amount, b.rent_status, b.rent_payment_date, b.security_deposit_amount, b.security_deposit_status, b.security_deposit_payment_date 
-        FROM office_bookings b
-        JOIN team t ON b.team_id = t.TeamID
-        WHERE b.rent_status = 'pending' OR b.security_deposit_status = 'pending'";
-            $result = $conn->query($sql);
+                // Check connection
+                if ($conn->connect_error) {
+                    die("Connection failed: " . $conn->connect_error);
+                }
 
-            // Table structure
-            echo "<table border='1' cellpadding='10'>
+
+                if (
+                    !isset($_SESSION['role']) ||
+                    ($_SESSION['role'] !== 'head' &&
+                        $_SESSION['role'] !== 'financehead' &&
+                        $_SESSION['role'] !== 'floorHost')
+                ) {
+                    header('Location: access_denied.php');
+                    exit();
+                }
+                
+
+                // Fetch data with filtering for pending statuses
+                $sql = "SELECT b.booking_id, t.TeamName, b.office_id, b.contract_id, b.booking_date, b.rent_amount, b.rent_status, b.rent_payment_date, b.security_deposit_amount, b.security_deposit_status, b.security_deposit_payment_date 
+            FROM office_bookings b
+            JOIN team t ON b.team_id = t.TeamID
+            WHERE b.rent_status = 'pending' OR b.security_deposit_status = 'pending'";
+                $result = $conn->query($sql);
+
+                // Table structure
+                echo "<table border='1' cellpadding='10'>
         <thead>
             <tr>
-                <th>Booking ID</th>
+             
                 <th>Team Name</th>
-              
                 <th>Security Deposit Status</th>
             </tr>
         </thead>
         <tbody>";
 
-            // Display data
-            if ($result->num_rows > 0) {
-                while ($row = $result->fetch_assoc()) {
-                    // Add a 'pending' class if the rent or security deposit status is 'Pending'
-                    $depositStatusClass = ($row['security_deposit_status'] === 'pending') ? 'pending' : '';
+                // Display data
+                if ($result->num_rows > 0) {
+                    while ($row = $result->fetch_assoc()) {
+                        // Add a 'pending' class if the rent or security deposit status is 'Pending'
+                        $depositStatusClass = ($row['security_deposit_status'] === 'pending') ? 'pending' : '';
 
-                    echo "<tr>
-                <td>{$row['booking_id']}</td>
-                <td>{$row['TeamName']}</td>
+                        echo "<tr>
               
+                <td>{$row['TeamName']}</td>
                 <td class='$depositStatusClass'>{$row['security_deposit_status']}</td>
             </tr>";
+                    }
+                } else {
+                    echo "<tr><td colspan='3'>No records found</td></tr>";
                 }
-            } else {
-                echo "<tr><td colspan='4'>No records found</td></tr>";
-            }
 
-            echo "</tbody></table>";
+                echo "</tbody></table>";
 
-            // Close connection
-            $conn->close();
-            ?>
+                echo "<a href='financedisplay.php'>show more information</a>";
+             
 
-
-
-
-
-
-
-
-            <!-- show pending results -->
-
-
-
-
-
-
-
-
-            <div class="inventory-options" id="inventoryOptions">
-                <button onclick="loadContent('select_branch.php')">View Inventory</button>
-                <button onclick="loadContent('add_inventory.php')">Add Inventory</button>
+                // Close connection
+                $conn->close();
+                ?>
             </div>
+
+            <!-- This is where the dynamic content will be loaded -->
             <div class="inventory-content" id="inventoryContent"></div>
         </div>
 
@@ -581,7 +615,7 @@ function getBranchSeatData()
             die('Connection failed: ' . $conn->connect_error);
         }
 
-        $sql = "SELECT COUNT(*) AS total FROM bookings WHERE end_time > NOW()";
+        $sql = "SELECT COUNT(*) AS total FROM bookingsss WHERE end_time > NOW()";
         $result = $conn->query($sql);
 
         if ($result->num_rows > 0) {
@@ -595,6 +629,23 @@ function getBranchSeatData()
     }
     ?>
 
+    <script>
+        // Accordion functionality
+        var acc = document.getElementsByClassName("accordion");
+        var i;
+
+        for (i = 0; i < acc.length; i++) {
+            acc[i].addEventListener("click", function() {
+                this.classList.toggle("active");
+                var panel = this.nextElementSibling;
+                if (panel.style.display === "block") {
+                    panel.style.display = "none";
+                } else {
+                    panel.style.display = "block";
+                }
+            });
+        }
+    </script>
 </body>
 
 </html>

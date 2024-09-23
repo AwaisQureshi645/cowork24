@@ -54,7 +54,7 @@ if (!$result) {
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+        margin-top: -1rem;
             color: #fff;
         }
 
@@ -67,7 +67,7 @@ if (!$result) {
 
         h1 {
             text-align: center;
-            color: #fff;
+            color: #464646;
             margin-top: 20px;
             margin-bottom: 20px;
         }
@@ -144,6 +144,7 @@ if (!$result) {
 
         .btn:hover {
             background-color: #0056b3;
+            color: white !important;
         }
 
         @media screen and (max-width: 768px) {

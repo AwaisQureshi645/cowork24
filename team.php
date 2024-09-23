@@ -183,7 +183,7 @@ $total_pages = ceil($total_results / $results_per_page);
             <table>
                 <thead>
                     <tr>
-                        <th>TeamID</th>
+                        
                         <th>TeamName</th>
                         <th>JoiningDate</th>
                         <th>EndingDate</th>
@@ -199,7 +199,7 @@ $total_pages = ceil($total_results / $results_per_page);
                     <?php
                     while ($row = $result->fetch_assoc()) {
                         echo "<tr>
-                                <td>{$row['TeamID']}</td>
+                               
                                 <td>{$row['TeamName']}</td>
                                 <td>{$row['JoiningDate']}</td>
                                 <td>{$row['EndingDate']}</td>

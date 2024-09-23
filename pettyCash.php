@@ -124,11 +124,26 @@ $conn->close();
 
     <style>
         body{
-            background-color: white !important;
+            background-color: white ;
+            max-width: 700px !important;
+            width: 80% !important;
+            margin: auto;
+            height: auto !important;
+
+         
+        }
+        #form-container_pettyCash {
+       
+            background-color: lightgrey !important;
+        
         }
         .container {
-            margin-top: 30px;
+           
+          
             background-color: white;
+        }
+        .container h2{
+            padding-top: 1rem;
         }
         .logout-button {
             position: absolute;
@@ -150,9 +165,14 @@ $conn->close();
     </style>
 </head>
 <body>
+
+
+<div id="form-container_pettyCash">
+
+</div>
     <div class="container">
        
-        <h2 class="text-center mb-4">Update Petty Cash</h2>
+        <h2 class="text-center ">Update Petty Cash</h2>
         <form method="post" action="">
             <div class="mb-3">
                 <label for="branch_id" class="form-label">Branch</label>

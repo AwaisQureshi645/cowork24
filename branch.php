@@ -56,9 +56,8 @@ $total_pages = ceil($total_results / $results_per_page);
             background-color: #f0f2f5;
             display: flex;
             justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
+        
+            margin-top:-4rem ;
         }
 
         .dashboard {
@@ -71,7 +70,7 @@ $total_pages = ceil($total_results / $results_per_page);
         }
 
         h2 {
-            margin-bottom: 20px;
+          margin-top: 1rem;
             color: #333;
             text-align: center;
         }
@@ -180,18 +179,18 @@ $total_pages = ceil($total_results / $results_per_page);
     <div class="dashboard">
  
         <h2>Branch Information</h2>
-        <div style="text-align: right;">
+        <div style="text-align: right;margin-top: -3rem">
             <a class="btn btn-primary" href="/cowork/newBranch.php" role="button">Add New Branch</a>
         </div>
         <div id="employeeTable">
             <table>
                 <thead>
                     <tr>
-                        <th>branch_id</th>
-                        <th>branch_name</th>
-                        <th>location</th>
-                        <th>ContactDetails</th>
-                        <th>manager</th>
+                  
+                        <th>Branch Name</th>
+                        <th>Location</th>
+                        <th>Contact Details</th>
+                        <th>Manager</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -200,7 +199,7 @@ $total_pages = ceil($total_results / $results_per_page);
                     while ($row = $result->fetch_assoc()) {
                       
                         echo "<tr>
-                                <td>{$row['branch_id']}</td>
+                               
                                 <td>{$row['branch_name']}</td>
                                 <td>{$row['location']}</td>
                                 <td>{$row['ContactDetails']}</td>

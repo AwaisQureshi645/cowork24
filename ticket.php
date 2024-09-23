@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $description = $conn->real_escape_string($_POST['description']);
     $priority = $conn->real_escape_string($_POST['priority']);
     $closeup_date = $conn->real_escape_string($_POST['closeup_date']);
-    
+    $status='Pending';
     $branch_id = (int)$_POST['branch_id'];
     $created_by = $_SESSION['username'];
 
@@ -48,8 +48,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $branch_check->store_result();
 
     if ($branch_check->num_rows > 0) {
-        $stmt = $conn->prepare("INSERT INTO tickets (subject, description, created_by, branch_id, priority, closeup_date) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("sssiss", $subject, $description, $created_by, $branch_id, $priority, $closeup_date);
+        $stmt = $conn->prepare("INSERT INTO tickets (subject, description, created_by, branch_id, priority, closeup_date, status) 
+        VALUES (?, ?, ?, ?, ?, ?, ?)");
+$stmt->bind_param("sssisss", $subject, $description, $created_by, $branch_id, $priority, $closeup_date, $status);
 
         if ($stmt->execute()) {
             $ticket_id = $stmt->insert_id;
@@ -235,7 +236,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
                 <div class="form-group">
                     <label for="closeup_date">closeup_date: </label>
-                    <input type="date" id="closeup_date" name="closeup_date" class="form-control">
+                    <input type="date" id="closeup_date" name="closeup_date" class="form-control" onclick="this.showPicker();" > 
                 </div>
                 <div class="form-group">
                     <button type="submit">Create Ticket</button>

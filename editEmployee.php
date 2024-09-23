@@ -144,9 +144,9 @@ $conn->close();
             background-repeat: no-repeat;
             display: flex;
             justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
+        
+
+            margin-top:-4rem ;
         }
 
         .container {
@@ -251,7 +251,7 @@ $conn->close();
 </head>
 <body>
     <div class="container">
-    <a href="logout.php" class="logout-button">Logout</a>
+ 
         <h2>Edit Employee Data</h2>
         <?php if (!empty($errormessage)): ?>
             <p class="error"><?= htmlspecialchars($errormessage) ?></p>

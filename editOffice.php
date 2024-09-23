@@ -1,14 +1,7 @@
 <?php
 session_start();
-$OfficeID = "";
-
-$RoomNo = "";
-$capacity = "";
-
-
-
-$Price = "";
-
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 $host = 'localhost';
 $dbname = 'coworker';
@@ -19,6 +12,7 @@ $conn = new mysqli($host, $username_db, $password_db, $dbname);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
+
 if (!isset($_SESSION['role']) || 
     ($_SESSION['role'] !== 'head' && 
      $_SESSION['role'] !== 'financehead' && 
@@ -28,40 +22,62 @@ if (!isset($_SESSION['role']) ||
     exit();
 }
 
+// Fetch branches for the dropdown
+$branch_sql = "SELECT branch_id, branch_name FROM branches";
+$branch_result = $conn->query($branch_sql);
+if (!$branch_result) {
+    die("Query failed: " . $conn->error);
+}
+
+$branches = [];
+while ($row = $branch_result->fetch_assoc()) {
+    $branches[] = $row;
+}
+
+$OfficeID = "";
+$RoomNo = "";
+$capacity = "";
+$Price = "";
+$branch_id = null;
+$status = "";
 
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     if (!isset($_GET["OfficeID"])) {
         header("location:/cowork/office.php");
         exit;
     }
+    
     $OfficeID = $conn->real_escape_string($_GET["OfficeID"]);
     $result = "SELECT * FROM office WHERE OfficeID='$OfficeID'";
     $sql = $conn->query($result);
     $row = $sql->fetch_assoc();
+    
     if (!$row) {
         header("location:/cowork/office.php");
         exit;
     }
     
+    // Fetch data from the selected row
     $RoomNo = $row["RoomNo"];
     $capacity = $row["capacity"];
-    
-    
     $Price = $row["Price"];
-   
+    $branch_id = $row["branch_id"];
+    $status = $row["status"];
 } else {
+    // Update logic for POST request
     $OfficeID = $conn->real_escape_string($_POST["OfficeID"]);
     $RoomNo = $conn->real_escape_string($_POST["RoomNo"]);
     $capacity = $conn->real_escape_string($_POST["capacity"]);
-   
-   
     $Price = $conn->real_escape_string($_POST["Price"]);
-   
+    $branch_id = !empty($_POST['branch_id']) ? $_POST['branch_id'] : null; // Allow NULL for branch
+    $status = $conn->real_escape_string($_POST["status"]);
 
     if (empty($RoomNo) || empty($capacity) || empty($Price)) {
         $errormessage = "All fields are required";
     } else {
-        $sql = "UPDATE office SET RoomNo = '$RoomNo', capacity = '$capacity', Price = '$Price' WHERE OfficeID = '$OfficeID'";
+        $sql = "UPDATE office 
+                SET RoomNo = '$RoomNo', capacity = '$capacity', Price = '$Price', branch_id = '$branch_id', status = '$status' 
+                WHERE OfficeID = '$OfficeID'";
         $result = $conn->query($sql);
         if (!$result) {
             $errormessage = "Invalid query: " . $conn->error;
@@ -75,6 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
 $conn->close();
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -121,7 +138,7 @@ $conn->close();
             color: #555;
             font-weight: bold;
         }
-        input[type="text"], input[type="file"] {
+        input[type="text"], input[type="file"], input[type="number"], select {
             padding: 12px;
             margin: 5px 0;
             border: 1px solid #ddd;
@@ -173,7 +190,7 @@ $conn->close();
 <body>
     <div class="container">
         <h2>Edit Office Data</h2>
-        <a href="logout.php" class="logout-button">Logout</a>
+    
         <?php if (!empty($errormessage)): ?>
             <p class="message"><?= htmlspecialchars($errormessage) ?></p>
         <?php endif; ?>
@@ -182,14 +199,32 @@ $conn->close();
         <?php endif; ?>
         <form action="" method="post" enctype="multipart/form-data">
             <input type="hidden" name="OfficeID" value="<?= htmlspecialchars($OfficeID) ?>">
+
             <label for="RoomNo">Room No:</label>
             <input type="text" id="RoomNo" name="RoomNo" value="<?= htmlspecialchars($RoomNo) ?>" required>
+
             <label for="capacity">Capacity:</label>
-            <input type="text" id="capacity" name="capacity" value="<?= htmlspecialchars($capacity) ?>" required>
+            <input type="number" id="capacity" name="capacity" value="<?= htmlspecialchars($capacity) ?>" required>
            
-            
             <label for="Price">Price:</label>
-            <input type="text" id="Price" name="Price" value="<?= htmlspecialchars($Price) ?>" required>
+            <input type="number" id="Price" name="Price" value="<?= htmlspecialchars($Price) ?>" required>
+
+            <label for="branch_id">Branch:</label>
+            <select id="branch_id" name="branch_id">
+                <option value="">Select a branch (optional)</option>
+                <?php
+                foreach ($branches as $branch) {
+                    $selected = ($branch['branch_id'] == $branch_id) ? "selected" : "";
+                    echo "<option value=\"{$branch['branch_id']}\" $selected>{$branch['branch_name']}</option>";
+                }
+                ?>
+            </select>
+
+            <label for="status">Status:</label>
+            <select id="status" name="status" required>
+                <option value="Available" <?= ($status == 'Available') ? "selected" : "" ?>>Available</option>
+                <option value="Not Available" <?= ($status == 'Not Available') ? "selected" : "" ?>>Not Available</option>
+            </select>
    
             <button type="submit">Submit</button>
         </form>

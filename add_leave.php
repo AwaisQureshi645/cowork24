@@ -100,12 +100,17 @@ $employees_result = $conn->query($employees_query);
         body {
             font-family: Arial, sans-serif;
             background: #eaeaea;
-            color: #fff;
+            color: #e2e1e1;
+            margin-top: -2rem;
             padding: 50px;
         }
-
+#total_days{
+    width: 100%;
+    border: 1px solid #464646;
+}
         h1 {
             text-align: center;
+            color: #464646 !important;
         }
 
         form {
@@ -114,12 +119,14 @@ $employees_result = $conn->query($employees_query);
             background-color: rgba(255, 255, 255, 0.1);
             padding: 20px;
             border-radius: 10px;
+            background-color: white;
         }
 
         label {
             display: block;
             margin-bottom: 5px;
             font-weight: bold;
+            color: #464646 !important;
         }
 
         input[type="number"],
@@ -132,6 +139,7 @@ $employees_result = $conn->query($employees_query);
             border-radius: 5px;
             box-sizing: border-box;
             font-size: 16px;
+            border: 1px solid black;
         }
 
         .form-row {
@@ -188,10 +196,13 @@ $employees_result = $conn->query($employees_query);
         .error {
             color: red;
         }
+        .title_leave_page{
+            color: #e2e1e1;
+        }
     </style>
 </head>
 <body>
-    <h1>Add Leave Request</h1>
+    <h1 class="title_leave_page">Add Leave Request</h1>
     <div class="loader" id="loader"></div>
     <div class="message" id="message"></div>
     <form method="post" action="" id="leaveForm">
@@ -220,11 +231,11 @@ $employees_result = $conn->query($employees_query);
         <div class="form-row">
             <div>
                 <label for="leave_start_date">Start Date:</label>
-                <input type="date" id="leave_start_date" name="leave_start_date" required>
+                <input type="date" id="leave_start_date" name="leave_start_date" required onclick="this.showPicker();">
             </div>
             <div>
                 <label for="leave_end_date">End Date:</label>
-                <input type="date" id="leave_end_date" name="leave_end_date" required>
+                <input type="date" id="leave_end_date" name="leave_end_date" required onclick="this.showPicker();">
             </div>
         </div>
 

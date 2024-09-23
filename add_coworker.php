@@ -32,40 +32,53 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['name'])) {
     $email = $_POST['email'];
     $office_id = $_POST['OfficeID'];
     $service_id = $_POST['service_id'];
-    
+    $seat_type = $_POST['seat_type'];
+    $private_office_size = $_POST['private_office_size'];
+    $no_of_seats = $_POST['no_of_seats'];
     $conn->begin_transaction();
 
     try {
         // Prepare contract details
-        $contract_details = "Contract for $name";
+        // $contract_details = $name;
 
-        // Check if contract already exists
-        $stmt = $conn->prepare("SELECT contract_id FROM contracts WHERE contract_details = ?");
-        $stmt->bind_param("s", $contract_details);
-        $stmt->execute();
-        $stmt->store_result();
+        // // Check if contract already exists
+        // $stmt = $conn->prepare("SELECT contract_id FROM contracts WHERE contract_details = ?");
+        // $stmt->bind_param("s", $contract_details);
+        // $stmt->execute();
+        // $stmt->store_result();
 
-        if ($stmt->num_rows > 0) {
-            // Contract exists, fetch contract ID
-            $stmt->bind_result($contract_id);
-            $stmt->fetch();
-        } else {
-            // No contract exists, create new contract
-            $stmt->close();
-            $stmt = $conn->prepare("INSERT INTO contracts (contract_details) VALUES (?)");
-            $stmt->bind_param("s", $contract_details);
-            if (!$stmt->execute()) {
-                throw new Exception("Error creating contract: " . $stmt->error);
-            }
-            $contract_id = $stmt->insert_id;
-        }
-        $stmt->close();
+        // if ($stmt->num_rows > 0) {
+        //     // Contract exists, fetch contract ID
+        //     $stmt->bind_result($contract_id);
+        //     $stmt->fetch();
+        // } else {
+        //     // No contract exists, create new contract
+        //     $stmt->close();
+        //     $stmt = $conn->prepare("INSERT INTO contracts (contract_details) VALUES (?)");
+        //     $stmt->bind_param("s", $contract_details);
+        //     if (!$stmt->execute()) {
+        //         throw new Exception("Error creating contract: " . $stmt->error);
+        //     }
+        //     $contract_id = $stmt->insert_id;
+        // }
+        // $stmt->close();
 
         // Insert the coworker record with the contract ID
-        $stmt = $conn->prepare("INSERT INTO coworkers (coworker_type, name, contact_info, email, office_id, service_id, contract_id)
-                                VALUES ('individual', ?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("sssiii", $name, $contact_info, $email, $office_id, $service_id, $contract_id);
-        if (!$stmt->execute()) {
+
+        if ($seat_type == 'dedicated_seat') {
+            $private_office_size = NULL; // Not applicable for dedicated seats
+        } else {
+            $no_of_seats = NULL; // Not applicable for private offices
+        }
+        
+
+
+        $stmt = $conn->prepare("INSERT INTO coworkers (coworker_type, name, contact_info, email, office_id, service_id, seat_type, private_office_size, no_of_seats, contract_id)
+        VALUES ('individual', ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+$stmt->bind_param("sssisssii", $name, $contact_info, $email, $office_id, $service_id, $seat_type, $private_office_size, $no_of_seats, $contract_id);
+
+if (!$stmt->execute()) {
             throw new Exception("Error creating coworker: " . $stmt->error);
         }
         $last_id = $stmt->insert_id;
@@ -166,6 +179,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['name'])) {
             cursor: pointer;
 
         }
+       #service_id {
+
+    max-width: 420px !important; ;
+}
+#seat_type {
+    max-width: 420px !important;
+}
+#private_office_size {
+    max-width: 420px  !important;
+}
     </style>
 </head>
 

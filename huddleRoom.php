@@ -59,8 +59,8 @@ $total_pages = ceil($total_results / $results_per_page);
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
+  
+            margin-top:-4rem ;
         }
 
         .dashboard {
@@ -75,7 +75,7 @@ $total_pages = ceil($total_results / $results_per_page);
         h2 {
             margin-bottom: 20px;
             color: #333;
-            text-align: center;
+       
         }
 
         table {
@@ -184,7 +184,7 @@ $total_pages = ceil($total_results / $results_per_page);
     <div class="dashboard">
  
         <h2>huddle Room Information</h2>
-        <div style="text-align: right;">
+        <div style="text-align: right; margin-top: -4rem">
             <a class="btn btn-primary" href="/cowork/newhuddle.php" role="button">Add New huddle Room</a>
         </div>
         <div id="huddleroomTable">

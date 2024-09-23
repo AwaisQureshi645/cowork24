@@ -49,15 +49,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Booking</title>
     <link rel="stylesheet" href="style.css">
-
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background:linear-gradient(to right, #007bff, #00d4ff);
+            background: linear-gradient(to right, #007bff, #00d4ff);
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
             margin: 0;
         }
         .container {
@@ -86,7 +84,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         input[type="text"],
         input[type="number"],
-        input[type="date"] {
+        input[type="date"],
+        select {
             padding: 10px;
             margin: 5px 0;
             border: 1px solid #ccc;
@@ -125,16 +124,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <form method="POST">
                 <label for="rent_amount">Rent Amount:</label>
                 <input type="number" id="rent_amount" name="rent_amount" value="<?php echo htmlspecialchars($booking['rent_amount']); ?>" required>
+                
                 <label for="rent_status">Rent Status:</label>
-                <input type="text" id="rent_status" name="rent_status" value="<?php echo htmlspecialchars($booking['rent_status']); ?>" required>
+                <select id="rent_status" name="rent_status" required>
+                    <option value="Pending" <?php echo ($booking['rent_status'] == 'Pending') ? 'selected' : ''; ?>>Pending</option>
+                    <option value="Paid" <?php echo ($booking['rent_status'] == 'Paid') ? 'selected' : ''; ?>>Paid</option>
+                </select>
+                
                 <label for="rent_payment_date">Rent Payment Date:</label>
-                <input type="date" id="rent_payment_date" name="rent_payment_date" value="<?php echo htmlspecialchars($booking['rent_payment_date']); ?>">
+                <input type="date" id="rent_payment_date" name="rent_payment_date" onclick="this.showPicker();" value="<?php echo htmlspecialchars($booking['rent_payment_date']); ?>">
+
                 <label for="security_deposit_amount">Security Deposit Amount:</label>
                 <input type="number" id="security_deposit_amount" name="security_deposit_amount" value="<?php echo htmlspecialchars($booking['security_deposit_amount']); ?>" required>
+                
                 <label for="security_deposit_status">Security Deposit Status:</label>
-                <input type="text" id="security_deposit_status" name="security_deposit_status" value="<?php echo htmlspecialchars($booking['security_deposit_status']); ?>" required>
+                <select id="security_deposit_status" name="security_deposit_status" required>
+                    <option value="Pending" <?php echo ($booking['security_deposit_status'] == 'Pending') ? 'selected' : ''; ?>>Pending</option>
+                    <option value="Paid" <?php echo ($booking['security_deposit_status'] == 'Paid') ? 'selected' : ''; ?>>Paid</option>
+                </select>
+                
                 <label for="security_deposit_payment_date">Security Deposit Payment Date:</label>
-                <input type="date" id="security_deposit_payment_date" name="security_deposit_payment_date" value="<?php echo htmlspecialchars($booking['security_deposit_payment_date']); ?>">
+                <input type="date" id="security_deposit_payment_date" onclick="this.showPicker();" name="security_deposit_payment_date" value="<?php echo htmlspecialchars($booking['security_deposit_payment_date']); ?>">
+                
                 <button type="submit">Update</button>
             </form>
         <?php else: ?>
